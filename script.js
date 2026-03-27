@@ -1913,7 +1913,113 @@ function initDetail() {
             });
         });
     }
+
+    // Render notes initially
+    renderNotes(book);
 }
+
+// --- NOTES & QUOTES LOGIC ---
+function renderNotes(book) {
+    const listEl = document.getElementById('notes-list');
+    if (!listEl) return;
+    
+    if (!book.notes || book.notes.length === 0) {
+        listEl.innerHTML = `<p class="text-sm text-slate-500 text-center py-4">No has guardado notas aún.</p>`;
+        return;
+    }
+    
+    // Reverse sort to show newest first
+    const sortedNotes = [...book.notes].reverse();
+    
+    listEl.innerHTML = sortedNotes.map((n, i) => {
+        const isQuote = n.type === 'quote';
+        // The original index is needed for deletion
+        const origIndex = book.notes.length - 1 - i;
+        const dateStr = new Date(n.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+        
+        return `
+            <div style="background:var(--bg-white);border-radius:var(--rounded-xl);padding:1rem;border:1px solid var(--border-slate-100);box-shadow:var(--shadow-sm);position:relative;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;">
+                    <span class="text-xs font-bold uppercase tracking-wider ${isQuote ? 'text-primary' : 'text-slate-400'}">${isQuote ? 'Cita' : 'Nota'}</span>
+                    <div style="display:flex;align-items:center;gap:0.75rem;">
+                        <span class="text-xs text-slate-400">${dateStr}</span>
+                        <button onclick="deleteNote('${book.id}', ${origIndex})" class="icon-btn" style="width:24px;height:24px;min-height:24px;padding:0;box-shadow:none;background:rgba(226,232,240,0.5);">
+                            <span class="material-symbols-outlined" style="font-size:14px;color:var(--text-slate-500);">delete</span>
+                        </button>
+                    </div>
+                </div>
+                ${isQuote ? 
+                    `<p class="text-sm text-slate-800 italic border-l-4 pl-3" style="border-left-color:var(--primary);">${n.text}</p>` : 
+                    `<p class="text-sm text-slate-700 whitespace-pre-wrap">${n.text}</p>`
+                }
+            </div>
+        `;
+    }).join('');
+}
+
+window.openNoteModal = function() {
+    const modal = document.getElementById('note-modal');
+    if (modal) {
+        document.getElementById('note-text').value = '';
+        modal.style.display = 'flex';
+    }
+};
+
+window.closeNoteModal = function() {
+    const modal = document.getElementById('note-modal');
+    if (modal) modal.style.display = 'none';
+};
+
+window.saveNote = function(e) {
+    if(e) e.preventDefault();
+    const urlParams = new URLSearchParams(window.location.search);
+    const bookId = urlParams.get('id');
+    const book = state.getBookById(bookId);
+    if (!book) return;
+    
+    const textEl = document.getElementById('note-text');
+    const typeEl = document.querySelector('input[name="note-type"]:checked');
+    
+    const text = textEl.value.trim();
+    if (!text) return;
+    
+    if (!book.notes) book.notes = [];
+    book.notes.push({
+        text: text,
+        type: typeEl ? typeEl.value : 'note',
+        date: new Date().toISOString()
+    });
+    
+    const allBooks = state.getBooks();
+    const idx = allBooks.findIndex(b => String(b.id) === String(bookId));
+    if (idx !== -1) {
+        allBooks[idx].notes = book.notes;
+        state.saveBooks(allBooks);
+    }
+    
+    haptic('success');
+    closeNoteModal();
+    renderNotes(book);
+};
+
+window.deleteNote = function(bookId, noteIndex) {
+    if (confirm('¿Eliminar esta nota?')) {
+        const book = state.getBookById(bookId);
+        if (!book || !book.notes) return;
+        
+        book.notes.splice(noteIndex, 1);
+        
+        const allBooks = state.getBooks();
+        const idx = allBooks.findIndex(b => String(b.id) === String(bookId));
+        if (idx !== -1) {
+            allBooks[idx].notes = book.notes;
+            state.saveBooks(allBooks);
+        }
+        
+        haptic('medium');
+        renderNotes(book);
+    }
+};
 
 // --- INSIGHTS (insights.html) LOGIC ---
 function initInsights() {
