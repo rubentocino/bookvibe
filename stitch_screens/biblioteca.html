@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1325ec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101222",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-fill {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="max-w-md mx-auto min-h-screen flex flex-col bg-background-light dark:bg-background-dark relative">
+<!-- Header -->
+<header class="sticky top-0 z-20 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-6 pt-8 pb-4">
+<div class="flex items-center justify-between mb-6">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-400">person</span>
+</div>
+<h1 class="text-2xl font-bold tracking-tight">Library</h1>
+</div>
+<button class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+<!-- Revolut-style Segmented Control -->
+<div class="flex p-1 bg-slate-200/50 dark:bg-slate-800/50 rounded-xl gap-1">
+<button class="flex-1 py-2 px-3 text-sm font-semibold rounded-lg bg-white dark:bg-slate-700 shadow-sm text-primary transition-all">
+                    Reading
+                </button>
+<button class="flex-1 py-2 px-3 text-sm font-semibold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-all">
+                    To Read
+                </button>
+<button class="flex-1 py-2 px-3 text-sm font-semibold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-all">
+                    Finished
+                </button>
+</div>
+</header>
+<!-- Search Bar -->
+<div class="px-6 py-2">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
+<input class="w-full pl-10 pr-4 py-2.5 bg-slate-200/30 dark:bg-slate-800/30 border-none rounded-xl focus:ring-2 focus:ring-primary/20 text-sm placeholder:text-slate-400" placeholder="Search your books" type="text"/>
+</div>
+</div>
+<!-- Book List Section -->
+<main class="flex-1 px-6 py-4 space-y-6">
+<div class="flex flex-col gap-4">
+<!-- Book Item 1 -->
+<div class="flex gap-4 p-2 rounded-xl transition-colors hover:bg-slate-100 dark:hover:bg-slate-800/50 group border border-transparent active:border-slate-200 dark:active:border-slate-700">
+<div class="w-20 h-28 flex-shrink-0 bg-slate-200 dark:bg-slate-800 rounded-lg overflow-hidden shadow-sm" data-alt="Cover of The Midnight Library book">
+<div class="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-white/50 text-3xl">auto_stories</span>
+</div>
+</div>
+<div class="flex flex-col justify-between py-1 flex-1">
+<div>
+<h3 class="font-bold text-base leading-tight">The Midnight Library</h3>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Matt Haig</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">Reading</span>
+<span class="text-[10px] text-slate-400 font-medium">64% completed</span>
+</div>
+</div>
+<button class="self-center p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<!-- Book Item 2 -->
+<div class="flex gap-4 p-2 rounded-xl transition-colors hover:bg-slate-100 dark:hover:bg-slate-800/50 group border border-transparent active:border-slate-200 dark:active:border-slate-700">
+<div class="w-20 h-28 flex-shrink-0 bg-slate-200 dark:bg-slate-800 rounded-lg overflow-hidden shadow-sm" data-alt="Cover of Atomic Habits book">
+<div class="w-full h-full bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center">
+<span class="material-symbols-outlined text-white/50 text-3xl">auto_stories</span>
+</div>
+</div>
+<div class="flex flex-col justify-between py-1 flex-1">
+<div>
+<h3 class="font-bold text-base leading-tight">Atomic Habits</h3>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">James Clear</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">Reading</span>
+<span class="text-[10px] text-slate-400 font-medium">12% completed</span>
+</div>
+</div>
+<button class="self-center p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<!-- Book Item 3 -->
+<div class="flex gap-4 p-2 rounded-xl transition-colors hover:bg-slate-100 dark:hover:bg-slate-800/50 group border border-transparent active:border-slate-200 dark:active:border-slate-700">
+<div class="w-20 h-28 flex-shrink-0 bg-slate-200 dark:bg-slate-800 rounded-lg overflow-hidden shadow-sm" data-alt="Cover of Project Hail Mary book">
+<div class="w-full h-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
+<span class="material-symbols-outlined text-white/50 text-3xl">auto_stories</span>
+</div>
+</div>
+<div class="flex flex-col justify-between py-1 flex-1">
+<div>
+<h3 class="font-bold text-base leading-tight">Project Hail Mary</h3>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Andy Weir</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider">Queue</span>
+<span class="text-[10px] text-slate-400 font-medium">Added yesterday</span>
+</div>
+</div>
+<button class="self-center p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<!-- Book Item 4 -->
+<div class="flex gap-4 p-2 rounded-xl transition-colors hover:bg-slate-100 dark:hover:bg-slate-800/50 group border border-transparent active:border-slate-200 dark:active:border-slate-700">
+<div class="w-20 h-28 flex-shrink-0 bg-slate-200 dark:bg-slate-800 rounded-lg overflow-hidden shadow-sm" data-alt="Cover of Klara and the Sun book">
+<div class="w-full h-full bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center">
+<span class="material-symbols-outlined text-white/50 text-3xl">auto_stories</span>
+</div>
+</div>
+<div class="flex flex-col justify-between py-1 flex-1">
+<div>
+<h3 class="font-bold text-base leading-tight">Klara and the Sun</h3>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Kazuo Ishiguro</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded-full bg-green-500/10 text-green-600 text-[10px] font-bold uppercase tracking-wider">Finished</span>
+<div class="flex gap-0.5">
+<span class="material-symbols-outlined text-[12px] text-yellow-500 active-fill">star</span>
+<span class="material-symbols-outlined text-[12px] text-yellow-500 active-fill">star</span>
+<span class="material-symbols-outlined text-[12px] text-yellow-500 active-fill">star</span>
+<span class="material-symbols-outlined text-[12px] text-yellow-500 active-fill">star</span>
+<span class="material-symbols-outlined text-[12px] text-slate-300">star</span>
+</div>
+</div>
+</div>
+<button class="self-center p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Floating Action Button -->
+<button class="fixed bottom-24 right-6 w-14 h-14 rounded-full bg-primary text-white shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-transform z-30">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+<!-- Bottom Navigation Bar -->
+<nav class="sticky bottom-0 w-full bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 px-6 pt-2 pb-6 flex justify-between items-center z-40">
+<a class="flex flex-col items-center gap-1 group" href="#">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">home</span>
+<span class="text-[10px] font-medium text-slate-400 group-hover:text-primary">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 group" href="#">
+<span class="material-symbols-outlined text-primary active-fill">book_2</span>
+<span class="text-[10px] font-bold text-primary">Library</span>
+</a>
+<a class="flex flex-col items-center gap-1 group" href="#">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">explore</span>
+<span class="text-[10px] font-medium text-slate-400 group-hover:text-primary">Discover</span>
+</a>
+<a class="flex flex-col items-center gap-1 group" href="#">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">settings</span>
+<span class="text-[10px] font-medium text-slate-400 group-hover:text-primary">Settings</span>
+</a>
+</nav>
+</div>
+</body></html>

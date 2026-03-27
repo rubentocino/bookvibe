@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <meta name="theme-color" content="#1325ec">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <title>BookVibe - Biblioteca</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="styles.css" rel="stylesheet"/>
+    <style>
+        .header-bg {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background-color: rgba(246, 246, 248, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: var(--spacing-8) var(--spacing-6) var(--spacing-4) var(--spacing-6);
+        }
+        
+        .segmented-control {
+            display: flex;
+            padding: 4px;
+            background-color: rgba(226, 232, 240, 0.5);
+            border-radius: var(--rounded-xl);
+            gap: 4px;
+        }
+
+        .segment-btn {
+            flex: 1;
+            padding: var(--spacing-2) var(--spacing-3);
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: var(--rounded-lg);
+            text-align: center;
+            transition: all 0.2s;
+            color: var(--text-slate-500);
+        }
+        
+        .segment-btn.active {
+            background-color: var(--bg-white);
+            box-shadow: var(--shadow-sm);
+            color: var(--primary);
+        }
+
+        .book-list-item {
+            display: flex;
+            gap: var(--spacing-4);
+            padding: var(--spacing-2);
+            border-radius: var(--rounded-xl);
+            transition: background-color 0.2s;
+            border: 1px solid transparent;
+            margin-bottom: var(--spacing-2);
+        }
+        .book-list-item:hover {
+            background-color: var(--bg-white);
+        }
+        
+        .book-list-cover {
+            width: 5rem;
+            height: 7rem;
+            flex-shrink: 0;
+            border-radius: var(--rounded-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .book-list-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding-top: var(--spacing-1);
+            padding-bottom: var(--spacing-1);
+            flex: 1;
+        }
+        
+        .tag {
+            padding: 2px 8px;
+            border-radius: var(--rounded-full);
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <!-- Header -->
+    <header class="header-bg">
+        <div class="flex items-center justify-between px-6 pt-8 pb-4">
+            <h1 class="text-xl font-bold tracking-tight text-slate-900">Biblioteca</h1>
+            <div class="flex gap-2">
+                <button class="icon-btn" onclick="document.getElementById('add-book-modal').style.display='flex'">
+                    <span class="material-symbols-outlined filled-icon">add</span>
+                </button>
+                <div class="icon-btn" style="cursor: pointer;" onclick="window.location.href='profile.html'">
+                    <span class="material-symbols-outlined filled-icon">person</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="segmented-control" style="margin: 0 var(--spacing-6) var(--spacing-2);">
+            <button class="segment-btn active" data-tab="reading">Leyendo</button>
+            <button class="segment-btn" data-tab="queue">Para Leer</button>
+            <button class="segment-btn" data-tab="finished">Terminados</button>
+        </div>
+    </header>
+
+    <!-- Search Bar -->
+    <div class="px-6 py-3">
+        <label class="search-container">
+            <span class="material-symbols-outlined search-icon" style="font-size: 20px;">search</span>
+            <input id="library-search" class="search-input" style="background-color: rgba(226, 232, 240, 0.3); border-radius: var(--rounded-xl);" placeholder="Buscar en tus libros" type="text"/>
+        </label>
+    </div>
+
+    <!-- Book List Section -->
+    <main id="book-list-container" class="px-6 py-4 flex-col gap-4 mb-24">
+        <!-- Rendered by JS -->
+    </main>
+
+    <!-- Floating Action Button -->
+    <button id="fab-add-book" class="floating-action-btn">
+        <span class="material-symbols-outlined" style="font-size: 30px;">add</span>
+    </button>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <div class="bottom-nav-inner">
+            <a class="nav-item" href="index.html">
+                <span class="material-symbols-outlined">home</span>
+                <span class="text-10px font-bold uppercase tracking-wider">Inicio</span>
+            </a>
+            <a class="nav-item active" href="library.html">
+                <span class="material-symbols-outlined filled-icon">auto_stories</span>
+                <span class="text-10px font-bold uppercase tracking-wider">Biblioteca</span>
+            </a>
+            <a class="nav-item" href="javascript:void(0)" style="opacity: 0; pointer-events: none;">
+                <span class="material-symbols-outlined">add</span>
+                <span class="text-10px font-bold">Añadir</span>
+            </a>
+            <a class="nav-item" href="index.html#activity-feed">
+                <span class="material-symbols-outlined">explore</span>
+                <span class="text-10px font-bold uppercase tracking-wider">Social</span>
+            </a>
+            <a class="nav-item" href="profile.html">
+                <span class="material-symbols-outlined">person</span>
+                <span class="text-10px font-bold uppercase tracking-wider">Perfil</span>
+            </a>
+        </div>
+    </nav>
+    
+    <!-- Add Book Modal -->
+    <div id="add-book-modal" style="display: none; position: fixed; inset: 0; background-color: rgba(0,0,0,0.5); z-index: 100; align-items: flex-end; justify-content: center;">
+        <div style="background-color: var(--bg-white); border-top-left-radius: var(--rounded-3xl); border-top-right-radius: var(--rounded-3xl); width: 100%; max-width: 480px; padding: 2rem 1.5rem; height: 85vh; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 class="text-xl font-bold text-slate-900">Añadir Libro</h3>
+                <button id="close-add-modal" class="icon-btn" style="box-shadow: none;">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            
+            <div style="position: relative; margin-bottom: 1rem;">
+                <span class="material-symbols-outlined" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-slate-400);">search</span>
+                <input id="api-book-search" type="text" class="search-input" style="width: 100%; padding-left: 3rem; background-color: var(--bg-light);" placeholder="Busca por título o autor (Google Books)...">
+            </div>
+
+            <div id="api-search-results" style="display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; flex: 1;">
+                <!-- Result items populate here -->
+                <div style="text-align: center; color: var(--text-slate-400); margin-top: 2rem;">
+                    Usa el buscador para añadir libros reales.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="script.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed:', err));
+}
+</script>
+</body>
+</html>

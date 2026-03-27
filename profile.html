@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <meta name="theme-color" content="#1325ec">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <title>BookVibe - Perfil y Social</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="styles.css" rel="stylesheet"/>
+    <style>
+        .header-profile {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background-color: rgba(246, 246, 248, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: var(--spacing-3) var(--spacing-4);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .circular-progress-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .svg-circle {
+            width: 11rem;
+            height: 11rem;
+            transform: rotate(-90deg);
+        }
+
+        .profile-img-lg {
+            position: absolute;
+            width: 8rem;
+            height: 8rem;
+            border-radius: var(--rounded-full);
+            border: 4px solid var(--bg-light);
+            overflow: hidden;
+            background-color: var(--border-slate-200);
+        }
+
+        .btn-secondary {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background-color: var(--border-slate-200);
+            color: var(--text-slate-900);
+            font-weight: 700;
+            padding: 0.75rem;
+            border-radius: var(--rounded-xl);
+            transition: opacity 0.2s;
+        }
+        .btn-secondary:hover { opacity: 0.8; }
+        
+        .stat-card {
+            background-color: var(--bg-white);
+            padding: var(--spacing-4);
+            border-radius: var(--rounded-xl);
+            border: 1px solid var(--border-slate-100);
+        }
+
+        .friend-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-4);
+        }
+
+        .friend-info {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-3);
+        }
+
+        .friend-avatar-lg {
+            width: 3rem;
+            height: 3rem;
+            border-radius: var(--rounded-full);
+            overflow: hidden;
+            background-color: var(--border-slate-200);
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <!-- Header -->
+    <header class="header-profile">
+        <div class="icon-btn" style="background-color: var(--primary-transparent-10); border: none; color: var(--primary); cursor: pointer;" onclick="document.getElementById('settings-modal').style.display = 'flex';">
+            <span class="material-symbols-outlined">settings</span>
+        </div>
+        <h1 class="text-lg font-bold tracking-tight text-slate-900">Perfil</h1>
+        <div class="icon-btn" style="background-color: var(--primary-transparent-10); border: none; color: var(--primary); cursor: pointer;" onclick="if(navigator.share){ navigator.share({title: 'My Profile', url: window.location.href}); } else { alert('Share not supported on this browser'); }">
+            <span class="material-symbols-outlined">share</span>
+        </div>
+    </header>
+
+    <main class="pb-24">
+        <!-- User Identity & Reading Goal Circular Progress -->
+        <section class="px-4 py-6 flex-col items-center flex">
+            <div class="circular-progress-container">
+                <!-- Circular Progress Ring (SVG) -->
+                <svg class="svg-circle" viewBox="0 0 128 128">
+                    <!-- Circular Progress Ring Background -->
+                <circle cx="64" cy="64" r="58" fill="none" stroke="rgba(226, 232, 240, 0.5)" stroke-width="4"></circle>
+                <!-- Circular Progress Ring Active -->
+                <circle id="progress-circle" cx="64" cy="64" r="58" fill="none" stroke="var(--primary)" stroke-width="4" stroke-linecap="round" stroke-dasharray="273 364" class="progress-ring origin-center -rotate-90 transition-all duration-1000"></circle>
+            </svg>
+            <div class="profile-img-lg">
+                <img class="profile-avatar-img w-full h-full object-cover" alt="Avatar Usuario" src=""/>
+            </div>
+        </div>
+        
+        <div class="text-center mt-5 mb-6">
+            <h1 id="profile-name" class="text-2xl font-bold tracking-tight text-slate-900">User Name</h1>
+            <p id="profile-handle" class="text-sm font-medium text-slate-500 mt-1">@handle</p>
+            <div class="mt-4 py-2 px-4 bg-white rounded-full border border-slate-200 shadow-sm inline-flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary" style="font-size: 18px;">auto_stories</span>
+                <span id="profile-progress-text" class="text-sm font-bold text-slate-700">0 of 50 books</span>
+            </div>
+        </div>
+            <div class="grid grid-cols-2 gap-3 w-full mt-8" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));">
+                <button class="btn-primary" style="padding: 0.75rem;" onclick="openEditProfile()">
+                    <span class="material-symbols-outlined text-lg">edit</span>
+                    Editar Perfil
+                </button>
+                <button class="btn-secondary" onclick="alert('Invitar amigos próximamente!')">
+                    <span class="material-symbols-outlined text-lg">person_add</span>
+                    Invitar
+                </button>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="px-4 py-4">
+               <h3 class="text-lg font-bold text-slate-900 mb-4">Estadísticas de Lectura</h3>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="stat-card flex items-center justify-between">
+                    <div>
+                        <p class="text-10px font-extrabold text-slate-400 uppercase tracking-wider mb-1">Páginas Leidas</p>
+                        <p id="stat-pages-read" class="text-2xl font-bold tracking-tight text-slate-900">0</p>
+                    </div>
+                    <span class="material-symbols-outlined text-primary opacity-20" style="font-size: 32px;">menu_book</span>
+                </div>
+                <div class="stat-card flex items-center justify-between">
+                    <div>
+                        <p class="text-10px font-extrabold text-slate-400 uppercase tracking-wider mb-1">Puntuación Media</p>
+                        <p id="stat-avg-rating" class="text-2xl font-bold tracking-tight text-slate-900">0.0</p>
+                    </div>
+                    <span class="material-symbols-outlined text-primary opacity-20" style="font-size: 32px;">star</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Social / Friends Section -->
+        <section class="max-w-md mx-auto mb-24">
+        <div class="bg-white rounded-t-[32px] px-6 pt-6 pb-2 border-t border-slate-100 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.05)]" style="min-height: 400px;">
+            <div class="section-header">
+                <h2 class="text-lg font-bold text-slate-900">Amigos (128)</h2>
+                <div class="flex gap-2">
+                    <button class="icon-btn" style="width: 2rem; height: 2rem; box-shadow: none;" onclick="alert('Añadir amigo próximamente!')">
+                        <span class="material-symbols-outlined text-sm text-slate-700">person_add</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="mt-4 mb-6">
+                <label class="search-container">
+                    <span class="material-symbols-outlined search-icon" style="font-size: 20px;">search</span>
+                    <input id="friend-search" class="search-input" style="background-color: var(--bg-white); border-color: var(--border-slate-200);" placeholder="Busca amigos..." type="text"/>
+                </label>
+            </div>
+
+            <div id="friends-list-container" class="friends-list flex flex-col gap-0 pb-10">
+                <!-- Rendered by JS -->
+            </div>
+        </div>
+    </section>
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <div class="bottom-nav-inner">
+            <a class="nav-item" href="index.html">
+                <span class="material-symbols-outlined">home</span>
+                <span class="text-10px font-bold uppercase tracking-wider">Inicio</span>
+            </a>
+            <a class="nav-item" href="library.html">
+                <span class="material-symbols-outlined">auto_stories</span>
+                <span class="text-10px font-bold uppercase tracking-wider">Biblioteca</span>
+            </a>
+            <a class="nav-item" href="javascript:void(0)" style="opacity: 0; pointer-events: none;">
+                <span class="material-symbols-outlined">add</span>
+                <span class="text-10px font-bold">Añadir</span>
+            </a>
+            <a class="nav-item" href="index.html#activity-feed">
+                <span class="material-symbols-outlined">explore</span>
+                <span class="text-10px font-bold uppercase tracking-wider">Social</span>
+            </a>
+            <a class="nav-item active" href="profile.html">
+                <span class="material-symbols-outlined filled-icon">person</span>
+                <span class="text-10px font-bold uppercase tracking-wider">Perfil</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Edit Profile Modal -->
+    <div id="edit-profile-modal" style="display: none; position: fixed; inset: 0; background-color: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 1rem;">
+        <div style="background-color: var(--bg-white); border-radius: var(--rounded-2xl); width: 100%; max-width: 400px; padding: 1.5rem; box-shadow: var(--shadow-2xl);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 class="text-xl font-bold text-slate-900">Editar Perfil</h3>
+                <button id="close-profile-btn" class="icon-btn" style="box-shadow: none;">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            
+            <form id="edit-profile-form" style="display: flex; flex-direction: column; gap: 1rem;">
+                <div>
+                    <label class="text-sm font-bold text-slate-700" style="display: block; margin-bottom: 0.25rem;">Nombre</label>
+                    <input id="edit-name" type="text" required class="search-input" style="width: 100%; padding-left: 1rem;">
+                </div>
+                <div>
+                    <label class="text-sm font-bold text-slate-700" style="display: block; margin-bottom: 0.25rem;">Handle</label>
+                    <input id="edit-handle" type="text" required class="search-input" style="width: 100%; padding-left: 1rem;">
+                </div>
+                <div>
+                    <label class="text-sm font-bold text-slate-700" style="display: block; margin-bottom: 0.25rem;">Meta Anual (libros)</label>
+                    <input id="edit-goal" type="number" required class="search-input" style="width: 100%; padding-left: 1rem;">
+                </div>
+                <div>
+                    <label class="text-sm font-bold text-slate-700" style="display: block; margin-bottom: 0.25rem;">URL del Avatar</label>
+                    <input id="edit-avatar" type="url" required class="search-input" style="width: 100%; padding-left: 1rem;">
+                </div>
+                
+                <button type="submit" class="btn-primary" style="margin-top: 0.5rem;">
+                    <span class="material-symbols-outlined">save</span> Guardar Perfil
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" style="display: none; position: fixed; inset: 0; background-color: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 1rem;">
+        <div style="background-color: var(--bg-white); border-radius: var(--rounded-2xl); width: 100%; max-width: 400px; padding: 1.5rem; box-shadow: var(--shadow-2xl);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 class="text-xl font-bold text-slate-900">Ajustes</h3>
+                <button id="close-settings-btn" class="icon-btn" style="box-shadow: none;">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <!-- Dark Mode Toggle -->
+                <div class="flex items-center justify-between" style="padding: 1rem; border: 1px solid var(--border-slate-200); border-radius: var(--rounded-xl);">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="material-symbols-outlined text-slate-900">dark_mode</span>
+                        <span class="font-bold text-slate-900">Modo Oscuro</span>
+                    </div>
+                    <label style="position: relative; display: inline-block; width: 48px; height: 24px;">
+                        <input type="checkbox" id="theme-toggle" style="opacity: 0; width: 0; height: 0;">
+                        <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border-slate-200); transition: .4s; border-radius: 34px;">
+                            <span id="theme-toggle-slider" style="position: absolute; content: ''; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%;"></span>
+                        </span>
+                    </label>
+                </div>
+
+                <!-- Language Selector -->
+                <div class="flex items-center justify-between" style="padding: 1rem; border: 1px solid var(--border-slate-200); border-radius: var(--rounded-xl);">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="material-symbols-outlined text-slate-900">translate</span>
+                        <span class="font-bold text-slate-900">Idioma</span>
+                    </div>
+                    <select id="lang-selector" style="padding: 0.4rem 0.75rem; border-radius: var(--rounded-lg); border: 1px solid var(--border-slate-200); font-family: inherit; font-weight: 600; font-size: 0.875rem; background-color: var(--bg-light); color: var(--text-slate-900); cursor: pointer;">
+                        <option value="es" selected>Español</option>
+                        <option value="en">English</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Modal -->
+    <div id="chat-modal" style="display: none; position: fixed; inset: 0; background-color: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 1rem;">
+        <div style="background-color: var(--bg-white); border-radius: var(--rounded-2xl); width: 100%; max-width: 400px; box-shadow: var(--shadow-2xl); display: flex; flex-direction: column; overflow: hidden;">
+            <div style="padding: 1rem 1.5rem; background-color: var(--border-slate-50); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-slate-100);">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div style="width: 2.5rem; height: 2.5rem; border-radius: 50%; overflow: hidden; background: var(--border-slate-200);"><img id="chat-avatar" src="" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                    <h3 id="chat-name" class="font-bold text-slate-900">Chat</h3>
+                </div>
+                <button onclick="document.getElementById('chat-modal').style.display='none'" class="icon-btn" style="width: 2rem; height: 2rem; box-shadow: none;">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">close</span>
+                </button>
+            </div>
+            
+            <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; min-height: 300px; max-height: 50vh; overflow-y: auto; background-color: var(--bg-light);">
+                <!-- Mock Msgs -->
+                <div style="align-self: flex-start; max-width: 80%; background-color: var(--bg-white); padding: 0.75rem; border-radius: 1rem; border-bottom-left-radius: 0; box-shadow: var(--shadow-sm);">
+                    <p class="text-sm text-slate-700">Hey! Did you finish that book we talked about?</p>
+                </div>
+                <div id="chat-messages" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+            </div>
+            
+            <form onsubmit="event.preventDefault(); const input=document.getElementById('chat-input'); const msg=input.value; if(msg){document.getElementById('chat-messages').innerHTML += '<div style=\x22align-self: flex-end; max-width: 80%; background-color: var(--primary); color: white; padding: 0.75rem; border-radius: 1rem; border-bottom-right-radius: 0; box-shadow: var(--shadow-sm); text-align: left; margin-left: auto;\x22><p class=\x22text-sm\x22>'+msg+'</p></div>'; input.value='';}" style="padding: 1rem; background-color: var(--bg-white); border-top: 1px solid var(--border-slate-100); display: flex; gap: 0.5rem; align-items: center;">
+                <input id="chat-input" type="text" placeholder="Type a message..." class="search-input" style="flex: 1; padding-left: 1rem; box-shadow: none; background-color: var(--bg-light);">
+                <button type="submit" class="icon-btn" style="background-color: var(--primary); color: white; flex-shrink: 0;">
+                    <span class="material-symbols-outlined">send</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+<script src="script.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed:', err));
+}
+</script>
+</body>
+</html>

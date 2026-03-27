@@ -1,0 +1,26 @@
+{
+  "name": "BookVibe - Tu App de Lectura",
+  "short_name": "BookVibe",
+  "description": "Sigue tu progreso de lectura, conecta con amigos lectores y descubre nuevos libros.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#1325ec",
+  "background_color": "#f6f6f8",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["books", "education", "lifestyle"]
+}

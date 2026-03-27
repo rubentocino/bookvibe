@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Profile &amp; Social - Reader App</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1325ec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101222",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<!-- Header / Top Bar -->
+<header class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-4 py-3 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">settings</span>
+</div>
+</div>
+<h1 class="text-lg font-extrabold tracking-tight">Profile</h1>
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">share</span>
+</div>
+</div>
+</header>
+<main class="max-w-2xl mx-auto pb-24">
+<!-- User Identity & Reading Goal Circular Progress -->
+<section class="px-4 py-6 flex flex-col items-center">
+<div class="relative flex items-center justify-center">
+<!-- Circular Progress Ring (SVG) -->
+<svg class="size-44 transform -rotate-90">
+<circle class="text-primary/10" cx="88" cy="88" fill="transparent" r="80" stroke="currentColor" stroke-width="6"></circle>
+<circle class="text-primary" cx="88" cy="88" fill="transparent" r="80" stroke="currentColor" stroke-dasharray="502.6" stroke-dashoffset="175.9" stroke-width="6"></circle>
+</svg>
+<!-- Profile Image -->
+<div class="absolute size-32 rounded-full border-4 border-background-light dark:border-background-dark overflow-hidden bg-slate-200">
+<img class="w-full h-full object-cover" data-alt="Professional portrait of a young man with glasses" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBm0b1wf2GcBq3JsUjnbDaLJdaz-ePxPerlf0Nmh33CnC1vX-MFZKPZ9PhPn86ybNGf57OH90zoQUpyp7nf_JmMDPELTAvQxuSCqZhOLYZJ0hxBlErxdj8sa_fg3lQgRt_tXDXsIWCDBSXpsPboQ3oY_AJGfT-IrKGp25B_x1I62wUOkqTi-_SXaBaTQcvzQXul5L9majLSEc9mFriw6zbSDXkV7Re4cQDNRtRFHGFsSh_p7TuQGfrxtYAwh_L_iRtWLVE7iFHomUM"/>
+</div>
+</div>
+<div class="mt-6 text-center">
+<h2 class="text-2xl font-bold tracking-tight">Alex Thorne</h2>
+<p class="text-slate-500 dark:text-slate-400 font-medium">@alex_reads</p>
+<div class="mt-2 inline-flex items-center gap-1.5 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-semibold">
+<span class="material-symbols-outlined text-sm">auto_stories</span>
+                    32 / 50 Books Read
+                </div>
+</div>
+<div class="grid grid-cols-2 gap-3 w-full mt-8">
+<button class="flex items-center justify-center gap-2 bg-primary text-white font-bold py-3 rounded-xl hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined text-lg">edit</span>
+                    Edit Profile
+                </button>
+<button class="flex items-center justify-center gap-2 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold py-3 rounded-xl hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined text-lg">person_add</span>
+                    Invite
+                </button>
+</div>
+</section>
+<!-- Stats Section -->
+<section class="px-4 py-4">
+<h3 class="text-xl font-bold mb-4">Reading Stats</h3>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Pages this year</p>
+<p class="text-2xl font-extrabold mt-1">11,240</p>
+<div class="mt-2 text-xs text-green-600 font-bold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-xs">trending_up</span>
+                        12% vs last year
+                    </div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Avg. Rating</p>
+<p class="text-2xl font-extrabold mt-1">4.8</p>
+<div class="mt-2 flex text-amber-400">
+<span class="material-symbols-outlined text-xs fill-1">star</span>
+<span class="material-symbols-outlined text-xs fill-1">star</span>
+<span class="material-symbols-outlined text-xs fill-1">star</span>
+<span class="material-symbols-outlined text-xs fill-1">star</span>
+<span class="material-symbols-outlined text-xs fill-1">star_half</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Social / Friends Section -->
+<section class="px-4 py-4 mt-4">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-xl font-bold">Friends</h3>
+<a class="text-primary font-bold text-sm" href="#">See all</a>
+</div>
+<!-- Search Bar -->
+<div class="relative mb-4">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full bg-slate-200 dark:bg-slate-800 border-none rounded-xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary outline-none" placeholder="Search friends or contacts" type="text"/>
+</div>
+<!-- Friends List -->
+<div class="space-y-4">
+<!-- Friend Item -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="size-12 rounded-full overflow-hidden bg-slate-200">
+<img class="w-full h-full object-cover" data-alt="Profile photo of a smiling woman" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBU-FoPDz8dq6UnIwoURxXyoXGDGVtWULPKF9XqIRayImmgUeQPRtmzarUmzLADTBdlxxZISrtaex1zrZq2xuKdUJrah8HRhBoTrON29IOSe_7SX4HEG6bYbOxwY5JEu1jonQqmuJ56H1Xdj8922Nj5om-v6UPIWH0MVGtg5vLwbkk882ObWLYahYH7BLAxQi4CgSUMNd_p_QhHzFx4XqnDjSJJb33lSfLU4hrY0OTFftElpNaJ9qBo1tQvP4j6I6-pW8wfgeK6OiM"/>
+</div>
+<div>
+<p class="font-bold text-slate-900 dark:text-slate-100">Sarah Jenkins</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Reading: "The Midnight Library"</p>
+</div>
+</div>
+<div class="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-full">Pro</div>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="size-12 rounded-full overflow-hidden bg-slate-200">
+<img class="w-full h-full object-cover" data-alt="Profile photo of a man in a casual shirt" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDLwRzZuRjPCaPH2n7bLQO6CcMderpEfYJVyhcOO7MAJiS8bAdNLockDnPSHYS9jsNkcr8kguZX8Zla8P0WFM0R1ScCJSyzS5hq-MAwU1sNeSA5SWp2DSpvfyNOLhrlJCZy4ggtutIFcvjCTXKQzhiPWq0qhXJMc6N6nqiBMfeGb0jlKAPiKzw-O9ONRy-fDDAyVr5HAegJ3adFjahg7cekIZBE-Z6DWLGwwQlhXpi4W7YetG2AdpHahyMRly2WuzGDKxic1oICcyc"/>
+</div>
+<div>
+<p class="font-bold text-slate-900 dark:text-slate-100">Marcus Chen</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Finished: "Atomic Habits"</p>
+</div>
+</div>
+<button class="size-8 rounded-full border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-400">
+<span class="material-symbols-outlined text-xl">chat_bubble</span>
+</button>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="size-12 rounded-full overflow-hidden bg-slate-200">
+<img class="w-full h-full object-cover" data-alt="Profile photo of a woman with curly hair" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjdRI2DNZ7Se-M7FHrNsWKYe4PwfEvJY2ElYTVMObonuvOckMk1MB0_p23KHfVCD22Qvm6_x685IcJ_ROa0JmRXD_CDVRZsWmQpGdJQKD96fjZS2qoRSIRY3B8cWcOi8q2PvuEq5lEq62-9uV2WitizX1rLqDn5LsMgCPoKJ9n-hYxVA-9NM0An6wKmQ0vyidFCH49XSrZ2kyYY1e_48XRkNPHT1ArX5dwgFW77iqEixE5TM4uu05BiIKs3R5ZuFvo17MY_VyD4C8"/>
+</div>
+<div>
+<p class="font-bold text-slate-900 dark:text-slate-100">Elena Rodriguez</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Just joined Reading Circle</p>
+</div>
+</div>
+<button class="size-8 rounded-full border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-400">
+<span class="material-symbols-outlined text-xl">chat_bubble</span>
+</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 bg-background-light dark:bg-background-dark border-t border-slate-200 dark:border-slate-800 pb-8 pt-2 px-6 flex justify-between items-center z-50">
+<a class="flex flex-col items-center gap-1 text-slate-400 transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 transition-colors" href="#">
+<span class="material-symbols-outlined">book_2</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Library</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 transition-colors" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Social</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary transition-colors" href="#">
+<span class="material-symbols-outlined fill-1">person</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Profile</span>
+</a>
+</nav>
+<style>
+        .fill-1 { font-variation-settings: 'FILL' 1; }
+    </style>
+</body></html>
