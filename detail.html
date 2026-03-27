@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
-    <title>BookVibe - Detalles del Libro</title>
+    <title>NookVibe - Detalles del Libro</title>
     <!-- CSS Dependencies -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -142,6 +142,36 @@
         </button>
     </div>
 
+    <!-- Reading Timer -->
+    <section class="px-4 mb-8" id="timer-section">
+        <p class="text-10px font-bold text-slate-400 uppercase tracking-wider mb-3">Sesión de Lectura</p>
+        <div class="timer-widget">
+            <div class="timer-circle">
+                <svg viewBox="0 0 120 120" class="timer-ring">
+                    <circle cx="60" cy="60" r="54" fill="none" stroke="var(--border-slate-200)" stroke-width="6"/>
+                    <circle id="timer-ring-progress" cx="60" cy="60" r="54" fill="none" stroke="var(--primary)" stroke-width="6" stroke-linecap="round"
+                        stroke-dasharray="0 339.29" transform="rotate(-90 60 60)" style="transition: stroke-dasharray 1s linear;"/>
+                </svg>
+                <div class="timer-display">
+                    <span id="timer-time" class="timer-digits">00:00</span>
+                    <span id="timer-label" class="timer-sublabel">Toca para iniciar</span>
+                </div>
+            </div>
+            <div class="timer-controls">
+                <button id="timer-start-btn" class="timer-btn timer-btn-primary" onclick="toggleTimer()">
+                    <span class="material-symbols-outlined">play_arrow</span>
+                </button>
+                <button id="timer-stop-btn" class="timer-btn timer-btn-secondary" onclick="stopTimer()" style="display:none;">
+                    <span class="material-symbols-outlined">stop</span>
+                </button>
+            </div>
+        </div>
+        <!-- Session History -->
+        <div id="session-history" style="margin-top:1rem;">
+            <!-- Rendered by JS -->
+        </div>
+    </section>
+
     <!-- Shelf Selector -->
     <div class="px-4 mb-6">
         <p class="text-10px font-bold text-slate-400 uppercase tracking-wider mb-2">Estantería</p>
@@ -205,10 +235,6 @@
             <a class="nav-item active" href="library.html">
                 <span class="material-symbols-outlined transition-colors filled-icon">auto_stories</span>
                 <span class="text-10px font-bold">Biblioteca</span>
-            </a>
-            <a class="nav-item" href="javascript:void(0)" style="opacity: 0; pointer-events: none;">
-                <span class="material-symbols-outlined">add</span>
-                <span class="text-10px font-bold">Añadir</span>
             </a>
             <a class="nav-item" href="index.html#activity-feed">
                 <span class="material-symbols-outlined transition-colors">explore</span>

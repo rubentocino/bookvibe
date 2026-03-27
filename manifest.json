@@ -1,6 +1,6 @@
 {
-  "name": "BookVibe - Tu App de Lectura",
-  "short_name": "BookVibe",
+  "name": "NookVibe - Tu App de Lectura",
+  "short_name": "NookVibe",
   "description": "Sigue tu progreso de lectura, conecta con amigos lectores y descubre nuevos libros.",
   "start_url": "./index.html",
   "scope": "./",

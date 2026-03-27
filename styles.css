@@ -743,3 +743,130 @@ html.dark .bottom-nav {
   padding: var(--spacing-4);
   text-align: center;
 }
+
+/* ===== PHASE 9: Reading Timer ===== */
+.timer-widget {
+  background: linear-gradient(135deg, rgba(19, 37, 236, 0.03), rgba(99, 102, 241, 0.06));
+  border: 1px solid rgba(19, 37, 236, 0.1);
+  border-radius: var(--rounded-3xl);
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+.timer-circle {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+}
+.timer-ring {
+  width: 100%;
+  height: 100%;
+}
+.timer-display {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.timer-digits {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-slate-900);
+  font-variant-numeric: tabular-nums;
+}
+.timer-sublabel {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-slate-400);
+  margin-top: 0.15rem;
+}
+.timer-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+}
+.timer-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--rounded-2xl);
+  border: none;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 48px;
+}
+.timer-btn-primary {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 4px 12px rgba(19, 37, 236, 0.3);
+}
+.timer-btn-primary:active {
+  transform: scale(0.96);
+}
+.timer-btn-primary.running {
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+.timer-btn-secondary {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+.timer-btn-secondary:active {
+  transform: scale(0.96);
+}
+
+/* Timer running pulse */
+@keyframes timer-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(19, 37, 236, 0.2); }
+  50%      { box-shadow: 0 0 0 8px rgba(19, 37, 236, 0); }
+}
+.timer-circle.running {
+  animation: timer-pulse 2s ease-in-out infinite;
+}
+
+/* Session History */
+.session-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border-slate-100);
+}
+.session-item:last-child {
+  border-bottom: none;
+}
+.session-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.session-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--rounded-full);
+  background-color: rgba(19, 37, 236, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+}
+.session-duration {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-slate-900);
+}
+.session-date {
+  font-size: 0.7rem;
+  color: var(--text-slate-400);
+}

@@ -1,15 +1,16 @@
 /**
- * BookVibe Service Worker
+ * NookVibe Service Worker
  * Provides offline caching and PWA support.
  */
 
-const CACHE_NAME = 'bookvibe-v2';
+const CACHE_NAME = 'nookvibe-v1';
 const APP_SHELL = [
     './',
     './index.html',
     './library.html',
     './detail.html',
     './profile.html',
+    './insights.html',
     './styles.css',
     './script.js',
     './manifest.json',
@@ -17,8 +18,8 @@ const APP_SHELL = [
     './icons/icon-512.png'
 ];
 
-const FONT_CACHE = 'bookvibe-fonts-v1';
-const API_CACHE = 'bookvibe-api-v1';
+const FONT_CACHE = 'nookvibe-fonts-v1';
+const API_CACHE = 'nookvibe-api-v1';
 
 // Install — precache app shell
 self.addEventListener('install', (event) => {
