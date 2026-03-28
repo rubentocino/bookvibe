@@ -1335,29 +1335,8 @@ function initProfile() {
     }
 
     const closeSettingsBtn = document.getElementById('close-settings-btn');
-    const themeToggle = document.getElementById('theme-toggle');
-    const slider = document.getElementById('theme-toggle-slider');
-    
     if (closeSettingsBtn) {
         closeSettingsBtn.addEventListener('click', () => document.getElementById('settings-modal').style.display='none');
-    }
-
-    if (themeToggle) {
-        const currentTheme = state.getTheme();
-        themeToggle.checked = currentTheme === 'dark';
-        if(currentTheme === 'dark') {
-            slider.style.transform = 'translateX(24px)';
-            slider.style.backgroundColor = 'var(--primary)';
-        } else {
-            slider.style.backgroundColor = 'white';
-        }
-
-        themeToggle.addEventListener('change', (e) => {
-            const isDark = e.target.checked;
-            state.setTheme(isDark ? 'dark' : 'light');
-            slider.style.transform = isDark ? 'translateX(24px)' : 'translateX(0)';
-            slider.style.backgroundColor = isDark ? 'var(--primary)' : 'white';
-        });
     }
 
     // Language Selector
