@@ -3,7 +3,7 @@
  * Provides offline caching and PWA support.
  */
 
-const CACHE_NAME = 'nookvibe-v1';
+const CACHE_NAME = 'nookvibe-v2';
 const APP_SHELL = [
     './',
     './index.html',
@@ -11,15 +11,17 @@ const APP_SHELL = [
     './detail.html',
     './profile.html',
     './insights.html',
+    './login.html',
     './styles.css',
     './script.js',
+    './auth.js',
     './manifest.json',
     './icons/icon-192.png',
     './icons/icon-512.png'
 ];
 
-const FONT_CACHE = 'nookvibe-fonts-v1';
-const API_CACHE = 'nookvibe-api-v1';
+const FONT_CACHE = 'nookvibe-fonts-v2';
+const API_CACHE = 'nookvibe-api-v2';
 
 // Install — precache app shell
 self.addEventListener('install', (event) => {

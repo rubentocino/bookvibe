@@ -122,13 +122,12 @@ class AppState {
     }
 
     init() {
-        if (!localStorage.getItem('bookapp_user')) {
-            localStorage.setItem('bookapp_user', JSON.stringify(DEFAULT_USER));
-        }
-        if (!localStorage.getItem('bookapp_books')) {
+        // User is now created via login.html / auth.js — no auto-creation of DEFAULT_USER
+        // Fallback: if user exists but no books, initialize defaults
+        if (localStorage.getItem('bookapp_user') && !localStorage.getItem('bookapp_books')) {
             localStorage.setItem('bookapp_books', JSON.stringify(DEFAULT_BOOKS));
         }
-        if (!localStorage.getItem('bookapp_friends')) {
+        if (localStorage.getItem('bookapp_user') && !localStorage.getItem('bookapp_friends')) {
             localStorage.setItem('bookapp_friends', JSON.stringify(DEFAULT_FRIENDS));
         }
         if (!localStorage.getItem('bookapp_theme')) {
@@ -796,6 +795,11 @@ window.toggleNotifications = function() {
 // Global Init on DOM Load
 document.addEventListener('DOMContentLoaded', () => {
     const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+
+    // Auth Guard — redirect to login if not authenticated (skip on login page itself)
+    if (currentPath !== 'login.html' && typeof requireAuth === 'function' && !requireAuth()) {
+        return; // Stop execution, redirect happening
+    }
     
     // Highlight Active Nav (Simple strict match for vanilla JS)
     const navItems = document.querySelectorAll('.bottom-nav .nav-item');

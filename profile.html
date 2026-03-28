@@ -275,8 +275,33 @@
                         <option value="en">English</option>
                     </select>
                 </div>
+
+                <!-- Session info -->
+                <div style="padding: 1rem; border: 1px solid var(--border-slate-200); border-radius: var(--rounded-xl); background: var(--bg-light);">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <span class="material-symbols-outlined text-slate-900" style="font-size: 18px;">person</span>
+                        <span class="font-bold text-slate-900" style="font-size: 0.875rem;" id="settings-user-name">Usuario</span>
+                    </div>
+                    <p class="text-xs text-slate-500" id="settings-member-since">Miembro desde: -</p>
+                </div>
+
+                <!-- Logout -->
+                <button onclick="logout()" class="flex items-center justify-between" style="width: 100%; padding: 1rem; border: 1px solid var(--border-slate-200); border-radius: var(--rounded-xl); cursor: pointer; background: none;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="material-symbols-outlined" style="color: #ef4444;">logout</span>
+                        <span class="font-bold" style="color: #ef4444;">Cerrar Sesión</span>
+                    </div>
+                    <span class="material-symbols-outlined text-slate-400" style="font-size: 18px;">chevron_right</span>
+                </button>
+
+                <!-- Clear all data -->
+                <button onclick="if(confirm('¿Seguro? Se borrarán todos tus datos.')) logoutAndClear()" style="width: 100%; padding: 0.75rem; border: 1px solid rgba(239,68,68,0.2); border-radius: var(--rounded-xl); cursor: pointer; background: rgba(239,68,68,0.05); color: #ef4444; font-weight: 600; font-size: 0.8125rem; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">delete_forever</span>
+                    Borrar cuenta y datos
+                </button>
             </div>
         </div>
+    </div>
     </div>
 
     <!-- Chat Modal -->
@@ -309,6 +334,7 @@
         </div>
     </div>
 </div>
+<script src="auth.js"></script>
 <script src="script.js"></script>
 <script>
 if ('serviceWorker' in navigator) {
