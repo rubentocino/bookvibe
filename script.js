@@ -201,6 +201,13 @@ class AppState {
             likes[activityId].splice(idx, 1);
         }
         localStorage.setItem('bookapp_likes', JSON.stringify(likes));
+        
+        // Push to Firebase
+        if (window._firebaseEnabled && window.NookFireAuth && window.NookFireAuth.isAuthenticated()) {
+            const u = window.NookFireAuth.getCurrentUser();
+            window.NookFireDB.toggleLike(activityId, u.uid).catch(e => console.error("Error syncing like", e));
+        }
+
         return idx === -1; // returns true if liked, false if unliked
     }
 
@@ -1569,34 +1576,104 @@ function initProfile() {
     const friendsListContainer = document.getElementById('friends-list-container');
     const friendSearchInput = document.getElementById('friend-search');
     let friendSearchQuery = '';
+    let currentFriendsMode = 'local';
+    let globalSearchResults = [];
+
+    // Tabs setup
+    const tabMyFriends = document.getElementById('tab-my-friends');
+    const tabGlobal = document.getElementById('tab-global-users');
+
+    if (tabMyFriends && tabGlobal) {
+        tabMyFriends.addEventListener('click', () => {
+            currentFriendsMode = 'local';
+            tabMyFriends.style.background = 'white';
+            tabMyFriends.style.color = 'var(--slate-900)';
+            tabMyFriends.classList.add('shadow-sm');
+            tabGlobal.style.background = 'transparent';
+            tabGlobal.style.color = 'var(--slate-500)';
+            tabGlobal.classList.remove('shadow-sm');
+            renderFriends();
+        });
+        tabGlobal.addEventListener('click', () => {
+            currentFriendsMode = 'global';
+            tabGlobal.style.background = 'white';
+            tabGlobal.style.color = 'var(--slate-900)';
+            tabGlobal.classList.add('shadow-sm');
+            tabMyFriends.style.background = 'transparent';
+            tabMyFriends.style.color = 'var(--slate-500)';
+            tabMyFriends.classList.remove('shadow-sm');
+            renderFriends();
+        });
+    }
+
+    window.addGlobalFriend = async function(uid, name, handle, avatar) {
+        const friendObj = { id: uid, uid, name, handle, avatar, isPro: false, posts:0, books:0, following:0 };
+        const localFriends = state.getFriends();
+        if(!localFriends.find(f => f.id === uid)) {
+            localFriends.push(friendObj);
+            localStorage.setItem('bookapp_friends', JSON.stringify(localFriends));
+            // Sync to firebase if ready
+            if (window._firebaseEnabled && window.NookFireAuth && window.NookFireAuth.isAuthenticated()) {
+                const me = window.NookFireAuth.getCurrentUser();
+                await window.NookFireDB.saveFriends(me.uid, localFriends);
+            }
+            alert(`Añadiste a ${name} a tus amigos!`);
+            currentFriendsMode = 'local';
+            if(tabMyFriends) tabMyFriends.click();
+        } else {
+            alert('Ya sois amigos!');
+        }
+    };
+
+    async function searchGlobalUsers(query) {
+        if(!query || query.length < 3) {
+            globalSearchResults = [];
+            renderFriends();
+            return;
+        }
+        if (window._firebaseEnabled && window.NookFireAuth) {
+            globalSearchResults = await window.NookFireDB.searchUsers(query);
+        } else {
+            // fallback generic search
+            globalSearchResults = state.getFriends().filter(f => f.name.toLowerCase().includes(query.toLowerCase()));
+        }
+        renderFriends();
+    }
 
     function renderFriends() {
         if (!friendsListContainer) return;
         
-        let filteredFriends = state.getFriends();
-
-        // Update friends count title
+        let friendsToRender = [];
         const friendsCountTitle = document.getElementById('friends-count-title');
-        if (friendsCountTitle) {
+
+        if (currentFriendsMode === 'local') {
             const totalFriends = state.getFriends().length;
-            friendsCountTitle.textContent = `Amigos (${totalFriends})`;
-        }
-        
-        if (friendSearchQuery) {
-            const query = friendSearchQuery.toLowerCase();
-            filteredFriends = filteredFriends.filter(f => f.name.toLowerCase().includes(query));
+            if (friendsCountTitle) friendsCountTitle.textContent = `Amigos (${totalFriends})`;
+            if (friendSearchInput) friendSearchInput.placeholder = 'Filtra a tus amigos...';
+            friendsToRender = state.getFriends();
+            
+            if (friendSearchQuery) {
+                const query = friendSearchQuery.toLowerCase();
+                friendsToRender = friendsToRender.filter(f => f.name.toLowerCase().includes(query) || (f.handle && f.handle.toLowerCase().includes(query)));
+            }
+        } else {
+            if (friendsCountTitle) friendsCountTitle.textContent = `Búsqueda Global`;
+            if (friendSearchInput) friendSearchInput.placeholder = 'Busca handle (ej. @juan)...';
+            friendsToRender = globalSearchResults;
         }
 
-        if (filteredFriends.length === 0) {
-            friendsListContainer.innerHTML = '<p class="text-sm text-slate-500 text-center py-4">No se encontraron amigos.</p>';
+        if (friendsToRender.length === 0) {
+            friendsListContainer.innerHTML = currentFriendsMode === 'local' 
+                ? '<p class="text-sm text-slate-500 text-center py-4">No se encontraron amigos.</p>'
+                : '<p class="text-sm text-slate-500 text-center py-4">Escribe 3 letras para buscar globales.</p>';
             return;
         }
 
-        friendsListContainer.innerHTML = filteredFriends.map(friend => `
+        friendsListContainer.innerHTML = friendsToRender.map(friend => `
             <div class="friend-list-item flex items-center justify-between" style="padding: 1rem 0; border-bottom: 1px solid var(--border-slate-100);">
                 <div class="flex items-center gap-3">
                     <div style="position: relative; width: 3rem; height: 3rem; border-radius: var(--rounded-full); background-color: var(--border-slate-200); overflow: hidden;">
-                        <img class="w-full h-full object-cover" alt="${friend.name}" src="${friend.avatar}"/>
+                        <img class="w-full h-full object-cover" alt="${friend.name}" src="${friend.avatar || 'https://api.dicebear.com/9.x/avataaars/svg'}"/>
                     </div>
                     <div>
                         <div class="flex items-center gap-1">
@@ -1604,22 +1681,32 @@ function initProfile() {
                             ${friend.isPro ? '<span class="material-symbols-outlined text-sm font-bold filled-icon" style="color: #eab308; font-size: 14px;">verified</span>' : ''}
                         </div>
                         <p class="text-xs text-slate-500 mt-0.5">
-                            <span class="font-bold text-slate-700">${friend.action}</span> 
-                            <span class="font-medium italic">${friend.book}</span>
+                            <span class="font-bold text-slate-700">${friend.action || friend.handle || ''}</span> 
+                            <span class="font-medium italic">${friend.book || ''}</span>
                         </p>
                     </div>
                 </div>
-                <button class="icon-btn" style="background-color: var(--primary-transparent-10); border: none; box-shadow: none;" onclick="openChat(\`${friend.name.replace(/`/g, '')}\`, \`${friend.avatar}\`)">
+                ${ currentFriendsMode === 'local' ? `
+                <button class="icon-btn" style="background-color: var(--primary-transparent-10); border: none; box-shadow: none;" onclick="openChat(\`${friend.uid || friend.id}\`, \`${friend.name.replace(/`/g, '')}\`, \`${friend.avatar}\`)">
                     <span class="material-symbols-outlined text-primary">chat_bubble</span>
-                </button>
+                </button>` : `
+                <button class="icon-btn" style="background-color: var(--primary-transparent-10); border: none; box-shadow: none;" onclick="addGlobalFriend(\`${friend.uid}\`, \`${friend.name}\`, \`${friend.handle}\`, \`${friend.avatar}\`)">
+                    <span class="material-symbols-outlined text-primary">person_add</span>
+                </button>`}
             </div>
         `).join('');
     }
 
     if(friendSearchInput) {
+        let debounceTimer;
         friendSearchInput.addEventListener('input', (e) => {
             friendSearchQuery = e.target.value;
-            renderFriends();
+            if (currentFriendsMode === 'local') {
+                renderFriends();
+            } else {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => searchGlobalUsers(friendSearchQuery), 400);
+            }
         });
     }
 
@@ -1752,15 +1839,74 @@ function initProfile() {
     }
 
     // Chat Modal Handle
-    window.openChat = function(name, avatar) {
+    let activeChatUnsubscribe = null;
+    let currentConversationId = null;
+    
+    window.openChat = function(friendUid, name, avatar) {
         const chatModal = document.getElementById('chat-modal');
         if(chatModal) {
+            const myUid = state.getUser().uid || 'anon';
+            currentConversationId = [myUid, friendUid].sort().join('_');
+            
             document.getElementById('chat-name').textContent = name;
             document.getElementById('chat-avatar').src = avatar;
-            document.getElementById('chat-messages').innerHTML = ''; // reset chat
+            const msgsContainer = document.getElementById('chat-messages');
+            msgsContainer.innerHTML = '<p class="text-center text-xs text-slate-400 my-4">Cargando...</p>';
+            
+            // Clean up previous listener
+            if (activeChatUnsubscribe) activeChatUnsubscribe();
+            
+            if (window.NookFireChat) {
+                activeChatUnsubscribe = window.NookFireChat.onMessages(currentConversationId, (messages) => {
+                    msgsContainer.innerHTML = messages.map(m => {
+                        const isMe = m.from === myUid;
+                        return `
+                        <div style="display:flex; justify-content: ${isMe ? 'flex-end' : 'flex-start'}; margin-bottom: 0.5rem; width: 100%;">
+                            <div style="max-width: 80%; padding: 0.75rem; border-radius: 12px; ${isMe ? 'background-color: var(--primary); color: white; border-bottom-right-radius: 4px;' : 'background-color: #f1f5f9; color: var(--slate-900); border-bottom-left-radius: 4px;'}">
+                                <p style="font-size: 0.875rem;">${m.text}</p>
+                            </div>
+                        </div>
+                        `;
+                    }).join('') || '<p class="text-center text-xs text-slate-400 flex-1 flex flex-col justify-center">No hay mensajes. ¡Di hola!</p>';
+                    msgsContainer.scrollTop = msgsContainer.scrollHeight;
+                });
+            }
+            
             chatModal.style.display = 'flex';
         }
     };
+    
+    // Wire up chat closing to stop listener
+    const closeChatBtn = document.getElementById('close-chat-btn');
+    if (closeChatBtn) {
+        closeChatBtn.addEventListener('click', () => {
+            if(activeChatUnsubscribe) {
+                activeChatUnsubscribe();
+                activeChatUnsubscribe = null;
+            }
+            document.getElementById('chat-modal').style.display='none';
+        });
+    }
+
+    // Send Message
+    const chatForm = document.getElementById('chat-form');
+    // Important: Re-wire the form, there might be one from HTML. 
+    // We will hook into the submit event.
+    if (chatForm) {
+        chatForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if(!text || !currentConversationId) return;
+            
+            const myUid = state.getUser().uid || 'anon';
+            input.value = '';
+            
+            if (window.NookFireChat) {
+                await window.NookFireChat.sendMessage(currentConversationId, myUid, text);
+            }
+        };
+    }
 }
 
 // ===== PHASE 9: Reading Timer =====
