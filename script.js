@@ -161,6 +161,29 @@ class AppState {
         return localStorage.getItem('bookapp_theme') || 'light';
     }
 
+    // Likes System
+    getLikes() {
+        try {
+            return JSON.parse(localStorage.getItem('bookapp_likes')) || {};
+        } catch(e) { return {}; }
+    }
+
+    toggleLike(activityId) {
+        const likes = this.getLikes();
+        const user = this.getUser();
+        if (!likes[activityId]) likes[activityId] = [];
+        
+        const idx = likes[activityId].indexOf(user.name);
+        if (idx === -1) {
+            likes[activityId].push(user.name);
+        } else {
+            likes[activityId].splice(idx, 1);
+        }
+        localStorage.setItem('bookapp_likes', JSON.stringify(likes));
+        return idx === -1; // returns true if liked, false if unliked
+    }
+
+
     setTheme(theme) {
         localStorage.setItem('bookapp_theme', theme);
         if (theme === 'dark') {
@@ -523,6 +546,34 @@ function animatePageEntry() {
     if (main) main.classList.add('page-enter');
 }
 
+// --- VIEW TRANSITIONS API ---
+// Smooth page-to-page transitions using the browser's native View Transitions API.
+// Falls back to normal navigation on unsupported browsers.
+
+function initViewTransitions() {
+    if (!document.startViewTransition) return; // Not supported — skip
+
+    document.addEventListener('click', (e) => {
+        const link = e.target.closest('a[href]');
+        if (!link) return;
+
+        const href = link.getAttribute('href');
+        // Only intercept internal page links (not external, anchors, or javascript)
+        if (!href || href.startsWith('#') || href.startsWith('http') || href.startsWith('javascript:') || href.startsWith('mailto:')) return;
+        // Only same-origin links
+        try {
+            const url = new URL(href, window.location.origin);
+            if (url.origin !== window.location.origin) return;
+        } catch { return; }
+
+        e.preventDefault();
+
+        document.startViewTransition(() => {
+            window.location.href = href;
+        });
+    });
+}
+
 // --- PULL TO REFRESH ---
 
 function initPullToRefresh(container, refreshCallback) {
@@ -753,10 +804,30 @@ function initDashboard() {
     // 3. Load Friends Activity
     const activityFeedContainer = document.getElementById('activity-feed-container');
     if (activityFeedContainer) {
+        // Global Like toggler
+        window.handleLikeClick = function(btn, activityId) {
+            const isLiked = state.toggleLike(activityId);
+            const icon = btn.querySelector('.material-symbols-outlined');
+            if (isLiked) {
+                btn.style.color = '#ef4444'; // Red
+                icon.classList.add('filled-icon');
+            } else {
+                btn.style.color = 'var(--text-slate-500)';
+                icon.classList.remove('filled-icon');
+            }
+        };
+
         const friends = state.getFriends();
-        activityFeedContainer.innerHTML = friends.map(friend => `
+        const likesData = state.getLikes();
+        const userName = state.getUser().name;
+
+        activityFeedContainer.innerHTML = friends.map((friend, idx) => {
+            const activityId = friend.id || 'act_' + idx;
+            const isLiked = likesData[activityId] && likesData[activityId].includes(userName);
+            
+            return `
             <div class="activity-card" style="flex-direction: column; gap: 0;">
-                <div style="display: flex; gap: var(--spacing-4); align-items: flex-start; width: 100%;">
+                <div style="display: flex; gap: var(--spacing-4); align-items: flex-start; width: 100%; cursor: pointer;" onclick="openMiniProfile('${friend.id}')">
                     <div class="friend-avatar">
                         <img alt="${friend.name}" src="${friend.avatar}"/>
                     </div>
@@ -772,15 +843,13 @@ function initDashboard() {
                 </div>
                 <!-- Interactions -->
                 <div style="display: flex; gap: 1rem; margin-top: 1rem; border-top: 1px solid var(--border-slate-50); padding-top: 0.5rem; width: 100%;">
-                    <button style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; color: var(--text-slate-500);" onclick="this.style.color='var(--primary)'; this.querySelector('.material-symbols-outlined').classList.add('filled-icon');">
-                        <span class="material-symbols-outlined" style="font-size: 16px;">favorite</span> Me gusta
-                    </button>
-                    <button style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; color: var(--text-slate-500);" onclick="alert('Opción de comentar próximamente.')">
-                        <span class="material-symbols-outlined" style="font-size: 16px;">chat_bubble</span> Comentar
+                    <button style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; color: ${isLiked ? '#ef4444' : 'var(--text-slate-500)'};" onclick="handleLikeClick(this, '${activityId}')">
+                        <span class="material-symbols-outlined ${isLiked ? 'filled-icon' : ''}" style="font-size: 16px;">favorite</span> Me gusta
                     </button>
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
     }
 }
 
@@ -795,6 +864,9 @@ window.toggleNotifications = function() {
 // Global Init on DOM Load
 document.addEventListener('DOMContentLoaded', () => {
     const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+
+    // Enable smooth page transitions (View Transitions API)
+    initViewTransitions();
 
     // Auth Guard — redirect to login if not authenticated (skip on login page itself)
     if (currentPath !== 'login.html' && typeof requireAuth === 'function' && !requireAuth()) {
@@ -813,6 +885,67 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Social Search Bar Logic
+    const searchInputs = document.querySelectorAll('.search-container .search-input');
+    searchInputs.forEach(input => {
+        // Create dropdown container
+        const searchContainer = input.closest('.search-container');
+        searchContainer.style.position = 'relative';
+        
+        let dropdown = document.createElement('div');
+        dropdown.className = 'search-dropdown';
+        dropdown.style.cssText = 'display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--bg-white); border-radius: var(--rounded-xl); box-shadow: var(--shadow-xl); border: 1px solid var(--border-slate-100); z-index: 50; max-height: 250px; overflow-y: auto; flex-direction: column; overflow: hidden;';
+        searchContainer.appendChild(dropdown);
+
+        input.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            dropdown.innerHTML = '';
+            
+            if (query.length < 2) {
+                dropdown.style.display = 'none';
+                return;
+            }
+
+            const friends = state.getFriends();
+            const matches = friends.filter(f => f.name.toLowerCase().includes(query) || (f.handle && f.handle.toLowerCase().includes(query)));
+
+            if (matches.length > 0) {
+                dropdown.style.display = 'flex';
+                matches.forEach(match => {
+                    const item = document.createElement('div');
+                    item.style.cssText = 'padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.75rem; border-bottom: 1px solid var(--border-slate-50); cursor: pointer; background: var(--bg-white); transition: background 0.2s;';
+                    item.onmouseover = () => item.style.background = 'var(--bg-slate-50)';
+                    item.onmouseout = () => item.style.background = 'var(--bg-white)';
+                    item.innerHTML = `
+                        <div style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; border: 1px solid var(--border-slate-200);">
+                            <img src="${match.avatar}" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-900">${match.name}</p>
+                            <p class="text-xs text-slate-500">${match.handle || '@user'}</p>
+                        </div>
+                    `;
+                    item.addEventListener('click', () => {
+                        dropdown.style.display = 'none';
+                        input.value = '';
+                        openMiniProfile(match.id);
+                    });
+                    dropdown.appendChild(item);
+                });
+            } else {
+                dropdown.style.display = 'flex';
+                dropdown.innerHTML = `<div style="padding: 1rem; text-align: center; color: var(--text-slate-400); font-size: 0.8125rem;">No se encontraron usuarios</div>`;
+            }
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!searchContainer.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+    });
+
     // Page Specific Inits
     if (currentPath === 'index.html' || currentPath === '') {
         initDashboard();
@@ -824,6 +957,168 @@ document.addEventListener('DOMContentLoaded', () => {
         initDetail();
     }
 });
+
+// --- SOCIAL MODALS (Dynamically injected) ---
+
+window.openMiniProfile = function(friendId) {
+    const friend = state.getFriends().find(f => f.id === friendId);
+    if (!friend) return;
+
+    let modal = document.getElementById('mini-profile-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'mini-profile-modal';
+        modal.style.cssText = 'display: none; position: fixed; inset: 0; background-color: rgba(0,0,0,0.6); z-index: 9999; align-items: flex-end; justify-content: center; backdrop-filter: blur(4px);';
+        modal.innerHTML = `
+            <div style="background-color: var(--bg-white); border-radius: 24px 24px 0 0; width: 100%; max-width: 500px; padding: 2rem; box-shadow: 0 -10px 40px rgba(0,0,0,0.2); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1); max-height: 90vh; overflow-y: auto;">
+                <div style="width: 40px; height: 5px; background: var(--border-slate-200); border-radius: 10px; margin: 0 auto 1.5rem auto;"></div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        <div style="width: 80px; height: 80px; border-radius: 50%; overflow: hidden; border: 3px solid var(--primary-light);">
+                            <img id="mp-avatar" src="" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div>
+                            <h2 id="mp-name" class="text-xl font-bold text-slate-900">Na</h2>
+                            <p id="mp-handle" class="text-sm text-slate-500">@ha</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; text-align: center; border-top: 1px solid var(--border-slate-100); border-bottom: 1px solid var(--border-slate-100); padding: 1rem 0;">
+                    <div><p id="mp-posts" class="font-bold text-lg text-slate-900">0</p><p class="text-xs text-slate-500">Reseñas</p></div>
+                    <div><p id="mp-books" class="font-bold text-lg text-slate-900">0</p><p class="text-xs text-slate-500">Libros</p></div>
+                    <div><p id="mp-following" class="font-bold text-lg text-slate-900">0</p><p class="text-xs text-slate-500">Siguiendo</p></div>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <button onclick="openChat(document.getElementById('mini-profile-modal').dataset.friendId)" class="btn-primary" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <span class="material-symbols-outlined">chat</span> Mensaje
+                    </button>
+                    <button class="btn-secondary" style="background: var(--bg-slate-100); flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" onclick="this.innerHTML='<span class=\\'material-symbols-outlined filled-icon\\'>check</span> Siguiendo'">
+                        <span class="material-symbols-outlined">person_add</span> Seguir
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeMiniProfile();
+        });
+    }
+
+    modal.dataset.friendId = friendId;
+    document.getElementById('mp-avatar').src = friend.avatar;
+    document.getElementById('mp-name').textContent = friend.name;
+    document.getElementById('mp-handle').textContent = friend.handle || '@' + friend.name.toLowerCase().replace(/\\s+/g, '');
+    document.getElementById('mp-posts').textContent = friend.posts || Math.floor(Math.random() * 50);
+    document.getElementById('mp-books').textContent = friend.books || Math.floor(Math.random() * 30);
+    document.getElementById('mp-following').textContent = friend.following || Math.floor(Math.random() * 100);
+
+    modal.style.display = 'flex';
+    // small delay for animation
+    setTimeout(() => {
+        modal.children[0].style.transform = 'translateY(0)';
+    }, 10);
+};
+
+window.closeMiniProfile = function() {
+    const modal = document.getElementById('mini-profile-modal');
+    if (modal) {
+        modal.children[0].style.transform = 'translateY(100%)';
+        setTimeout(() => modal.style.display = 'none', 300);
+    }
+};
+
+window.openChat = function(friendId) {
+    if(window.closeMiniProfile) closeMiniProfile();
+    const friend = state.getFriends().find(f => f.id === friendId) || state.getFriends()[0];
+    
+    let chatModal = document.getElementById('global-chat-modal');
+    if (!chatModal) {
+        chatModal = document.createElement('div');
+        chatModal.id = 'global-chat-modal';
+        chatModal.style.cssText = 'display: none; position: fixed; inset: 0; background-color: var(--bg-white); z-index: 10000; flex-direction: column;';
+        chatModal.innerHTML = `
+            <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-slate-100); display: flex; align-items: center; gap: 1rem; padding-top: calc(1rem + env(safe-area-inset-top));">
+                <button onclick="document.getElementById('global-chat-modal').style.display='none'" class="icon-btn" style="box-shadow:none; padding:0; background:none;">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                </button>
+                <img id="gc-avatar" src="" style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
+                <h3 id="gc-name" class="font-bold text-slate-900" style="flex: 1;">Chat</h3>
+            </div>
+            <div id="gc-messages" style="flex: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; background: var(--bg-light);">
+                <!-- Messages go here -->
+            </div>
+            <div style="padding: 1rem; border-top: 1px solid var(--border-slate-200); background: var(--bg-white); padding-bottom: calc(1rem + env(safe-area-inset-bottom)); display: flex; gap: 0.5rem; align-items: center;">
+                <input type="text" id="gc-input" placeholder="Escribe un mensaje..." style="flex:1; padding: 0.75rem 1rem; border-radius: 999px; border: 1px solid var(--border-slate-300); outline:none; font-family:var(--font);">
+                <button onclick="sendChatMessage()" style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: white; display:flex; align-items:center; justify-content:center; border:none;">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">send</span>
+                </button>
+            </div>
+        `;
+        document.body.appendChild(chatModal);
+
+        // Enter key to send
+        document.getElementById('gc-input').addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') sendChatMessage();
+        });
+    }
+
+    chatModal.dataset.friendId = friendId;
+    document.getElementById('gc-avatar').src = friend.avatar;
+    document.getElementById('gc-name').textContent = friend.name;
+    
+    renderChatMessages(friendId);
+    chatModal.style.display = 'flex';
+};
+
+window.renderChatMessages = function(friendId) {
+    const container = document.getElementById('gc-messages');
+    container.innerHTML = '';
+    
+    // Fallback info text
+    container.innerHTML = `<p style="text-align:center; color:var(--text-slate-400); font-size: 0.75rem; margin-top: 1rem;">Inicio de la conversación segura offline</p>`;
+
+    const msgs = JSON.parse(localStorage.getItem('bookapp_messages') || '[]');
+    const myId = state.getUser().handle;
+    
+    const thread = msgs.filter(m => (m.to === friendId || m.to === myId) && (m.from === friendId || m.from === myId));
+    
+    thread.forEach(msg => {
+        const isMe = msg.from === myId;
+        const div = document.createElement('div');
+        div.style.cssText = `max-width: 80%; padding: 0.75rem 1rem; border-radius: 16px; ${isMe ? 'align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 4px;' : 'align-self: flex-start; background: white; color: var(--text-slate-900); border: 1px solid var(--border-slate-100); border-bottom-left-radius: 4px;'}`;
+        div.textContent = msg.text;
+        container.appendChild(div);
+    });
+    
+    setTimeout(() => {
+        container.scrollTop = container.scrollHeight;
+    }, 50);
+};
+
+window.sendChatMessage = function() {
+    const input = document.getElementById('gc-input');
+    const text = input.value.trim();
+    if (!text) return;
+    
+    const friendId = document.getElementById('global-chat-modal').dataset.friendId;
+    const myId = state.getUser().handle;
+    
+    const msgs = JSON.parse(localStorage.getItem('bookapp_messages') || '[]');
+    msgs.push({
+        id: 'msg_' + Date.now(),
+        from: myId,
+        to: friendId,
+        text: text,
+        timestamp: new Date().toISOString()
+    });
+    
+    localStorage.setItem('bookapp_messages', JSON.stringify(msgs));
+    input.value = '';
+    renderChatMessages(friendId);
+};
+
 
 // --- LIBRARY (library.html) LOGIC ---
 
@@ -1253,6 +1548,13 @@ function initProfile() {
         if (!friendsListContainer) return;
         
         let filteredFriends = state.getFriends();
+
+        // Update friends count title
+        const friendsCountTitle = document.getElementById('friends-count-title');
+        if (friendsCountTitle) {
+            const totalFriends = state.getFriends().length;
+            friendsCountTitle.textContent = `Amigos (${totalFriends})`;
+        }
         
         if (friendSearchQuery) {
             const query = friendSearchQuery.toLowerCase();
@@ -1312,6 +1614,28 @@ function initProfile() {
     
     if (closeProfileBtn) {
         closeProfileBtn.addEventListener('click', () => document.getElementById('edit-profile-modal').style.display='none');
+    }
+
+    const avatarUploadInput = document.getElementById('edit-avatar-upload');
+    if (avatarUploadInput) {
+        avatarUploadInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const btn = avatarUploadInput.nextElementSibling;
+                btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;margin-right:4px;"></span> Procesando...';
+                
+                // processAndCompressImage is in auth.js
+                processAndCompressImage(file, (base64, err) => {
+                    if (err) {
+                        alert(err);
+                        btn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 18px;">upload</span>Subir nueva foto';
+                        return;
+                    }
+                    document.getElementById('edit-avatar').value = base64;
+                    btn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 18px; color: #34d399">check_circle</span>¡Imagen Lista!';
+                });
+            }
+        });
     }
 
     if (profileForm) {
@@ -1793,7 +2117,7 @@ function initDetail() {
                     `;
                 }).join('')}
             </div>
-            ${hasMore ? `<button class="text-sm font-semibold text-primary mt-2" onclick="alert('Todas las opiniones próximamente!')">Ver más opiniones</button>` : ''}
+            ${hasMore ? `<button class="text-sm font-semibold text-primary mt-2" onclick="document.getElementById('review-modal').style.display='flex'">Escribe tu opinión</button>` : ''}
         `;
     }
 
@@ -2192,6 +2516,112 @@ function initInsights() {
                     }
                 }
             }
+        });
+    }
+}
+
+// --- REVIEW STARS & SUBMIT ---
+
+function selectReviewStars(rating) {
+    const stars = document.querySelectorAll('.review-star');
+    const ratingInput = document.getElementById('review-rating');
+    if (ratingInput) ratingInput.value = rating;
+    stars.forEach(star => {
+        const starVal = parseInt(star.getAttribute('data-star'));
+        if (starVal <= rating) {
+            star.style.color = '#fbbf24';
+            star.style.fontVariationSettings = "'FILL' 1";
+        } else {
+            star.style.color = 'var(--text-slate-300)';
+            star.style.fontVariationSettings = "'FILL' 0";
+        }
+    });
+    haptic('light');
+}
+
+function submitReview(event) {
+    event.preventDefault();
+    const ratingInput = document.getElementById('review-rating');
+    const textInput = document.getElementById('review-text');
+    const rating = parseInt(ratingInput?.value || '0');
+    const text = textInput?.value?.trim() || '';
+
+    if (rating === 0) {
+        // Shake the stars briefly to indicate rating needed
+        const starsContainer = document.getElementById('review-stars');
+        if (starsContainer) {
+            starsContainer.style.animation = 'none';
+            starsContainer.offsetHeight; // trigger reflow
+            starsContainer.style.animation = 'shake 0.3s ease';
+        }
+        return;
+    }
+
+    // Get book id from URL
+    const params = new URLSearchParams(window.location.search);
+    const bookId = params.get('id');
+    if (!bookId) return;
+
+    // Save rating to book
+    state.updateBookRating(bookId, rating);
+
+    // Save review text to localStorage
+    const reviews = JSON.parse(localStorage.getItem('bookapp_reviews') || '{}');
+    reviews[bookId] = { rating, text, date: new Date().toISOString() };
+    localStorage.setItem('bookapp_reviews', JSON.stringify(reviews));
+
+    // Record streak activity
+    streakTracker.recordActivity(0);
+
+    // Close modal and show confirmation
+    document.getElementById('review-modal').style.display = 'none';
+    textInput.value = '';
+    ratingInput.value = '0';
+    selectReviewStars(0);
+
+    haptic('success');
+    launchConfetti();
+
+    // Refresh detail page to show updated rating
+    if (typeof initDetailPage === 'function') initDetailPage();
+}
+
+// Add shake animation for review stars validation
+if (!document.getElementById('review-shake-style')) {
+    const shakeStyle = document.createElement('style');
+    shakeStyle.id = 'review-shake-style';
+    shakeStyle.textContent = `
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+    `;
+    document.head.appendChild(shakeStyle);
+}
+
+// --- PROFILE HELPER FUNCTIONS ---
+
+function shareProfile() {
+    if (navigator.share) {
+        navigator.share({ title: 'Mi Perfil en NookVibe', url: window.location.href });
+    } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(window.location.href);
+    }
+}
+
+function inviteFriends(btn) {
+    if (navigator.share) {
+        navigator.share({
+            title: 'NookVibe - Tu espacio de lectura',
+            text: '¡Únete a NookVibe y comparte tus lecturas conmigo!',
+            url: window.location.origin
+        });
+    } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(window.location.origin).then(() => {
+            const original = btn.innerHTML;
+            btn.innerHTML = '<span class="material-symbols-outlined text-lg">check</span> ¡Copiado!';
+            setTimeout(() => { btn.innerHTML = original; }, 1500);
         });
     }
 }

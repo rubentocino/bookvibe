@@ -4,6 +4,11 @@
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
     <meta name="theme-color" content="#1325ec">
+    <meta name="description" content="Únete a NookVibe, tu espacio de lectura personal. Organiza tu biblioteca, analiza tus hábitos y conecta con otros lectores.">
+    <meta property="og:title" content="NookVibe - Bienvenido">
+    <meta property="og:description" content="Tu espacio de lectura personal. Organiza, analiza y comparte tu experiencia lectora.">
+    <meta property="og:image" content="icons/icon-512.png">
+    <meta property="og:type" content="website">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="manifest.json">
@@ -649,11 +654,12 @@
             </div>
 
             <div class="avatar-section">
-                <div class="avatar-picker" id="avatar-picker" onclick="document.getElementById('avatar-presets-area').style.display = document.getElementById('avatar-presets-area').style.display === 'none' ? 'flex' : 'none'">
+                <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
+                <div class="avatar-picker" id="avatar-picker" onclick="document.getElementById('avatar-upload').click()">
                     <span class="material-symbols-outlined">add_a_photo</span>
                 </div>
-                <span class="avatar-hint">Toca para elegir avatar</span>
-                <div class="avatar-presets" id="avatar-presets-area" style="display: none;">
+                <span class="avatar-hint">Sube una foto o elige un estilo abajo</span>
+                <div class="avatar-presets" id="avatar-presets-area">
                     <!-- Preset avatars with diverse styles -->
                 </div>
             </div>
@@ -716,6 +722,7 @@
         </div>
     </div>
 
+    <script src="firebase.js"></script>
     <script src="auth.js"></script>
     <script>
         // Redirect if already logged in
@@ -740,11 +747,25 @@
         function selectAvatar(url, el) {
             selectedAvatar = url;
             document.querySelectorAll('.avatar-preset').forEach(p => p.classList.remove('selected'));
-            el.classList.add('selected');
+            if(el) el.classList.add('selected');
 
             const picker = document.getElementById('avatar-picker');
             picker.innerHTML = `<img src="${url}" alt="Avatar"><span class="material-symbols-outlined" style="position:absolute;bottom:0;right:0;font-size:16px;background:white;border-radius:50%;padding:2px;color:var(--primary);">edit</span>`;
         }
+        
+        // Handle physical file upload
+        document.getElementById('avatar-upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                processAndCompressImage(file, (base64, err) => {
+                    if(err) {
+                        alert(err);
+                        return;
+                    }
+                    selectAvatar(base64, null);
+                });
+            }
+        });
 
         // Auto-format handle
         document.getElementById('input-handle').addEventListener('input', function() {

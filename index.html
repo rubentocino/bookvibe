@@ -4,6 +4,11 @@
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <meta name="theme-color" content="#1325ec">
+    <meta name="description" content="NookVibe — Tu espacio de lectura personal. Organiza tu biblioteca, sigue tu progreso, mantén rachas de lectura y conecta con otros lectores.">
+    <meta property="og:title" content="NookVibe - Tu Espacio de Lectura">
+    <meta property="og:description" content="Organiza tu biblioteca, sigue tu progreso y conecta con otros lectores.">
+    <meta property="og:image" content="icons/icon-512.png">
+    <meta property="og:type" content="website">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="manifest.json">
@@ -139,8 +144,8 @@
                 <h1 id="user-name" class="text-xl font-bold tracking-tight text-slate-900">Usuario</h1>
             </div>
         </div>
-        <button class="icon-btn" onclick="toggleNotifications()">
-            <span class="material-symbols-outlined filled-icon" style="font-size: 22px;">notifications</span>
+        <button class="icon-btn" onclick="toggleNotifications()" aria-label="Notificaciones">
+            <span class="material-symbols-outlined filled-icon" style="font-size: 22px;" aria-hidden="true">notifications</span>
         </button>
         
         <!-- Notifications Dropdown -->
@@ -196,12 +201,12 @@
     </main>
 
     <!-- Floating Action Button -->
-    <button class="floating-action-btn" onclick="window.location.href='library.html'">
-        <span class="material-symbols-outlined" style="font-size: 28px;">add</span>
+    <button class="floating-action-btn" onclick="window.location.href='library.html'" aria-label="Añadir libro">
+        <span class="material-symbols-outlined" style="font-size: 28px;" aria-hidden="true">add</span>
     </button>
 
     <!-- Bottom Navigation Bar -->
-    <nav class="bottom-nav">
+    <nav class="bottom-nav" role="navigation" aria-label="Navegación principal">
         <div class="bottom-nav-inner flex justify-between items-center w-full">
             <a class="nav-item active" href="index.html">
                 <span class="material-symbols-outlined filled-icon">home</span>
@@ -222,6 +227,7 @@
         </div>
     </nav>
 </div>
+<script src="firebase.js"></script>
 <script src="auth.js"></script>
 <script src="script.js"></script>
 <script>

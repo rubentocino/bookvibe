@@ -4,6 +4,11 @@
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <meta name="theme-color" content="#1325ec">
+    <meta name="description" content="Tu biblioteca personal en NookVibe. Organiza tus libros en estanterías: leyendo, para leer y terminados. Busca y añade nuevos libros.">
+    <meta property="og:title" content="NookVibe - Mi Biblioteca">
+    <meta property="og:description" content="Organiza tus libros en estanterías y sigue tu progreso de lectura.">
+    <meta property="og:image" content="icons/icon-512.png">
+    <meta property="og:type" content="website">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="manifest.json">
@@ -100,12 +105,12 @@
         <div class="flex items-center justify-between px-6 pt-8 pb-4">
             <h1 class="text-xl font-bold tracking-tight text-slate-900">Biblioteca</h1>
             <div class="flex gap-2">
-                <button class="icon-btn" onclick="document.getElementById('add-book-modal').style.display='flex'">
-                    <span class="material-symbols-outlined filled-icon">add</span>
+                <button class="icon-btn" onclick="document.getElementById('add-book-modal').style.display='flex'" aria-label="Añadir libro">
+                    <span class="material-symbols-outlined filled-icon" aria-hidden="true">add</span>
                 </button>
-                <div class="icon-btn" style="cursor: pointer;" onclick="window.location.href='profile.html'">
-                    <span class="material-symbols-outlined filled-icon">person</span>
-                </div>
+                <button class="icon-btn" style="cursor: pointer;" onclick="window.location.href='profile.html'" aria-label="Ir a perfil">
+                    <span class="material-symbols-outlined filled-icon" aria-hidden="true">person</span>
+                </button>
             </div>
         </div>
 
@@ -130,12 +135,12 @@
     </main>
 
     <!-- Floating Action Button -->
-    <button id="fab-add-book" class="floating-action-btn">
-        <span class="material-symbols-outlined" style="font-size: 30px;">add</span>
+    <button id="fab-add-book" class="floating-action-btn" aria-label="Añadir libro">
+        <span class="material-symbols-outlined" style="font-size: 30px;" aria-hidden="true">add</span>
     </button>
 
     <!-- Bottom Navigation Bar -->
-    <nav class="bottom-nav">
+    <nav class="bottom-nav" role="navigation" aria-label="Navegación principal">
         <div class="bottom-nav-inner">
             <a class="nav-item" href="index.html">
                 <span class="material-symbols-outlined">home</span>
@@ -180,6 +185,7 @@
         </div>
     </div>
 </div>
+<script src="firebase.js"></script>
 <script src="auth.js"></script>
 <script src="script.js"></script>
 <script>

@@ -1,9 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <meta name="theme-color" content="#1325ec">
+    <meta name="description" content="Consulta los detalles de tu libro, actualiza tu progreso de lectura, añade notas y escribe reseñas en NookVibe.">
+    <meta property="og:title" content="NookVibe - Detalles del Libro">
+    <meta property="og:description" content="Sigue tu progreso de lectura, toma notas y comparte reseñas con NookVibe.">
+    <meta property="og:image" content="icons/icon-512.png">
+    <meta property="og:type" content="website">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="manifest.json">
@@ -111,12 +116,12 @@
 <div class="app-container pb-24">
     <!-- Header -->
     <header class="flex items-center justify-between px-6 py-4 bg-white/80 backdrop-blur-md sticky top-0 z-50">
-        <a href="library.html" class="icon-btn" style="background-color: rgba(226,232,240,0.5); border: none;">
-            <span class="material-symbols-outlined text-slate-900">arrow_back</span>
+        <a href="library.html" class="icon-btn" style="background-color: rgba(226,232,240,0.5); border: none;" aria-label="Volver a biblioteca">
+            <span class="material-symbols-outlined text-slate-900" aria-hidden="true">arrow_back</span>
         </a>
         <h2 class="text-base font-semibold leading-tight text-slate-900 flex-1 text-center">Detalles del Libro</h2>
-        <button class="icon-btn" style="background-color: rgba(226,232,240,0.5); border: none;" onclick="if(navigator.share){ navigator.share({title: 'Book Details', url: window.location.href}); } else { alert('Tu navegador no soporta esta función'); }">
-            <span class="material-symbols-outlined text-slate-900">share</span>
+        <button class="icon-btn" style="background-color: rgba(226,232,240,0.5); border: none;" onclick="if(navigator.share){ navigator.share({title: 'Detalles del Libro', url: window.location.href}); } else { navigator.clipboard.writeText(window.location.href).then(()=>{this.querySelector('.material-symbols-outlined').textContent='check'; setTimeout(()=>this.querySelector('.material-symbols-outlined').textContent='share',1500)}); }" aria-label="Compartir libro">
+            <span class="material-symbols-outlined text-slate-900" aria-hidden="true">share</span>
         </button>
     </header>
 
@@ -239,7 +244,7 @@
     </section>
 
     <!-- Bottom Navigation Bar -->
-    <nav class="bottom-nav">
+    <nav class="bottom-nav" role="navigation" aria-label="Navegación principal">
         <div class="bottom-nav-inner flex justify-between items-center w-full">
             <a class="nav-item" href="index.html">
                 <span class="material-symbols-outlined transition-colors">home</span>
@@ -270,19 +275,20 @@
                 </button>
             </div>
             
-            <form onsubmit="event.preventDefault(); alert('¡Reseña guardada!'); document.getElementById('review-modal').style.display='none';" style="display: flex; flex-direction: column; gap: 1rem;">
-                <div style="display: flex; justify-content: center; gap: 0.5rem; color: var(--text-slate-300);">
-                    <span class="material-symbols-outlined" style="font-size: 32px; cursor: pointer;" onclick="this.style.color='#fbbf24'">star</span>
-                    <span class="material-symbols-outlined" style="font-size: 32px; cursor: pointer;" onclick="this.style.color='#fbbf24'">star</span>
-                    <span class="material-symbols-outlined" style="font-size: 32px; cursor: pointer;" onclick="this.style.color='#fbbf24'">star</span>
-                    <span class="material-symbols-outlined" style="font-size: 32px; cursor: pointer;" onclick="this.style.color='#fbbf24'">star</span>
-                    <span class="material-symbols-outlined" style="font-size: 32px; cursor: pointer;" onclick="this.style.color='#fbbf24'">star</span>
+            <form id="review-form" onsubmit="submitReview(event)" style="display: flex; flex-direction: column; gap: 1rem;">
+                <div id="review-stars" style="display: flex; justify-content: center; gap: 0.5rem;">
+                    <span class="material-symbols-outlined review-star" data-star="1" style="font-size: 32px; cursor: pointer; color: var(--text-slate-300); transition: color 0.15s;" onclick="selectReviewStars(1)">star</span>
+                    <span class="material-symbols-outlined review-star" data-star="2" style="font-size: 32px; cursor: pointer; color: var(--text-slate-300); transition: color 0.15s;" onclick="selectReviewStars(2)">star</span>
+                    <span class="material-symbols-outlined review-star" data-star="3" style="font-size: 32px; cursor: pointer; color: var(--text-slate-300); transition: color 0.15s;" onclick="selectReviewStars(3)">star</span>
+                    <span class="material-symbols-outlined review-star" data-star="4" style="font-size: 32px; cursor: pointer; color: var(--text-slate-300); transition: color 0.15s;" onclick="selectReviewStars(4)">star</span>
+                    <span class="material-symbols-outlined review-star" data-star="5" style="font-size: 32px; cursor: pointer; color: var(--text-slate-300); transition: color 0.15s;" onclick="selectReviewStars(5)">star</span>
                 </div>
+                <input type="hidden" id="review-rating" value="0">
                 <div>
-                    <textarea required class="search-input" rows="4" style="width: 100%; border-radius: var(--rounded-xl); padding: 1rem; resize: none; font-family: inherit;" placeholder="¿Qué opinas del libro?"></textarea>
+                    <textarea id="review-text" required class="search-input" rows="4" style="width: 100%; border-radius: var(--rounded-xl); padding: 1rem; resize: none; font-family: inherit;" placeholder="¿Qué opinas del libro?"></textarea>
                 </div>
                 <button type="submit" class="btn-primary" style="margin-top: 0.5rem;">
-                    <span class="material-symbols-outlined">publish</span> Publicar
+                    <span class="material-symbols-outlined">publish</span> Publicar Reseña
                 </button>
             </form>
         </div>
@@ -322,6 +328,7 @@
     </div>
 
 </div>
+<script src="firebase.js"></script>
 <script src="auth.js"></script>
 <script src="script.js"></script>
 <script>

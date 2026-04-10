@@ -164,6 +164,9 @@ img {
 
 /* Common Components */
 .shadow-sm { box-shadow: var(--shadow-sm); }
+.shadow-lg { box-shadow: var(--shadow-lg); }
+.text-center { text-align: center; }
+.w-full { width: 100%; }
 .rounded-xl { border-radius: var(--rounded-xl); }
 .rounded-2xl { border-radius: var(--rounded-2xl); }
 .rounded-3xl { border-radius: var(--rounded-3xl); }
@@ -870,3 +873,55 @@ html.dark .bottom-nav {
   font-size: 0.7rem;
   color: var(--text-slate-400);
 }
+
+/* ===== Insights Page: Stats Grid ===== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-3);
+}
+.stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: var(--spacing-4);
+  border-radius: var(--rounded-2xl);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ===== View Transitions ===== */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root) {
+  animation: fade-out 0.15s ease-in forwards,
+             slide-out 0.2s ease-in forwards;
+}
+
+::view-transition-new(root) {
+  animation: fade-in 0.2s ease-out 0.1s forwards,
+             slide-in 0.25s ease-out 0.1s forwards;
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slide-out {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-8px); }
+}
+
+@keyframes slide-in {
+  from { transform: translateY(8px); }
+  to   { transform: translateY(0); }
+}
+
