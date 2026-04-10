@@ -243,16 +243,27 @@
                     <input id="edit-goal" type="number" required class="search-input" style="width: 100%; padding-left: 1rem;">
                 </div>
                 <div>
-                    <label class="text-sm font-bold text-slate-700" style="display: block; margin-bottom: 0.5rem;">Avatar</label>
-                    <div style="display: flex; gap: 1rem; align-items: center;">
-                        <input id="edit-avatar-upload" type="file" accept="image/*" style="display: none;">
-                        <button type="button" onclick="document.getElementById('edit-avatar-upload').click()" style="background: var(--bg-slate-100); border: 1px dashed var(--border-slate-300); border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.8125rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
-                            <span class="material-symbols-outlined" style="font-size: 18px;">upload</span>
-                            Subir nueva foto
-                        </button>
+                    <label class="text-sm font-bold text-slate-700" style="display: block; margin-bottom: 0.5rem;">Foto de Perfil</label>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <!-- Live avatar preview -->
+                        <div id="edit-avatar-preview" onclick="document.getElementById('edit-avatar-upload').click()" style="width:72px;height:72px;border-radius:50%;overflow:hidden;background:var(--bg-light);border:2px solid var(--border-slate-200);flex-shrink:0;cursor:pointer;position:relative;display:flex;align-items:center;justify-content:center;">
+                            <span class="material-symbols-outlined" style="font-size:28px;color:var(--text-slate-400);">person</span>
+                            <!-- Camera overlay on hover -->
+                            <div style="position:absolute;inset:0;background:rgba(0,0,0,0.4);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;" id="avatar-camera-overlay">
+                                <span class="material-symbols-outlined" style="color:white;font-size:22px;">photo_camera</span>
+                            </div>
+                        </div>
+                        <div style="flex:1;">
+                            <input id="edit-avatar-upload" type="file" accept="image/*" capture="environment" style="display: none;">
+                            <button type="button" id="upload-photo-btn" onclick="document.getElementById('edit-avatar-upload').click()" style="background: var(--primary-transparent-10); border: 1px solid var(--primary-transparent-20); border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.8125rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; color: var(--primary); width:100%;">
+                                <span class="material-symbols-outlined" style="font-size: 18px;">upload</span>
+                                Cambiar foto
+                            </button>
+                            <p style="font-size:0.7rem;color:var(--text-slate-400);margin-top:0.4rem;">Desde galería o cámara</p>
+                        </div>
                     </div>
-                    <!-- Hidden input to still store the actual final URL/Base64 -->
-                    <input id="edit-avatar" type="hidden" required>
+                    <!-- Hidden input to store the actual URL/Base64 -->
+                    <input id="edit-avatar" type="hidden">
                 </div>
                 
                 <button type="submit" class="btn-primary" style="margin-top: 0.5rem;">

@@ -49,20 +49,38 @@ function createAccount(userData) {
 
     localStorage.setItem('bookapp_user', JSON.stringify(user));
 
+    // Store account by handle key for multi-account login support
+    if (!userData.isGuest && userData.handle) {
+        const accountsKey = 'bookapp_accounts';
+        const accounts = JSON.parse(localStorage.getItem(accountsKey) || '{}');
+        accounts[user.handle] = {
+            name: user.name,
+            handle: user.handle,
+            avatar: user.avatar,
+            createdAt: user.createdAt
+        };
+        localStorage.setItem(accountsKey, JSON.stringify(accounts));
+    }
+
     // Create session
     const session = {
         loggedInAt: Date.now(),
         userId: generateUserId(),
-        isGuest: user.isGuest
+        isGuest: user.isGuest,
+        handle: user.handle
     };
     localStorage.setItem(SESSION_KEY, JSON.stringify(session));
 
-    // Initialize default data for new users
+    // Initialize data — guests get demo data, real accounts start empty
     if (!localStorage.getItem('bookapp_books')) {
-        initializeDefaultData();
+        if (userData.isGuest) {
+            initializeDefaultData();
+        } else {
+            initializeEmptyData();
+        }
     }
-    
-    // Safety check for existing users missing likes/messages
+
+    // Ensure likes/messages exist
     if (!localStorage.getItem('bookapp_likes')) {
         localStorage.setItem('bookapp_likes', JSON.stringify({}));
         localStorage.setItem('bookapp_messages', JSON.stringify([]));
@@ -75,16 +93,34 @@ function createAccount(userData) {
  * Log in an existing user (for future Firebase integration)
  */
 function login(credentials) {
-    // For localStorage auth, we just check if user exists
+    // If a handle is provided, try to restore that account's data
+    if (credentials && credentials.handle) {
+        const accounts = JSON.parse(localStorage.getItem('bookapp_accounts') || '{}');
+        const accountMeta = accounts[credentials.handle];
+        if (!accountMeta) return null; // account not found on this device
+
+        // If a full user profile is stored separately (per-handle), load it
+        const userKey = 'bookapp_user_' + credentials.handle;
+        const storedUser = localStorage.getItem(userKey);
+        if (storedUser) {
+            localStorage.setItem('bookapp_user', storedUser);
+            // Also restore books/friends for this account
+            const booksKey = 'bookapp_books_' + credentials.handle;
+            const friendsKey = 'bookapp_friends_' + credentials.handle;
+            if (localStorage.getItem(booksKey)) localStorage.setItem('bookapp_books', localStorage.getItem(booksKey));
+            if (localStorage.getItem(friendsKey)) localStorage.setItem('bookapp_friends', localStorage.getItem(friendsKey));
+        }
+    }
+
     const user = localStorage.getItem('bookapp_user');
     if (!user) return null;
 
     const session = {
         loggedInAt: Date.now(),
-        userId: generateUserId()
+        userId: generateUserId(),
+        handle: credentials && credentials.handle
     };
     localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-
     return JSON.parse(user);
 }
 
@@ -92,8 +128,21 @@ function login(credentials) {
  * Log the user out
  */
 function logout() {
+    // Save user data under their handle key before clearing active session
+    // so they can log back in on the same device
+    try {
+        const user = JSON.parse(localStorage.getItem('bookapp_user') || 'null');
+        if (user && user.handle && !user.isGuest) {
+            const userKey = 'bookapp_user_' + user.handle;
+            localStorage.setItem(userKey, JSON.stringify(user));
+            // Save books/friends under handle key too
+            const books = localStorage.getItem('bookapp_books');
+            const friends = localStorage.getItem('bookapp_friends');
+            if (books) localStorage.setItem('bookapp_books_' + user.handle, books);
+            if (friends) localStorage.setItem('bookapp_friends_' + user.handle, friends);
+        }
+    } catch(e) { /* silent */ }
     localStorage.removeItem(SESSION_KEY);
-    // Don't clear user data - allow re-login
     window.location.replace('login.html');
 }
 
@@ -154,7 +203,17 @@ function generateUserId() {
 }
 
 /**
- * Initialize default books and friends for new users
+ * Initialize empty data structure for real new accounts
+ */
+function initializeEmptyData() {
+    localStorage.setItem('bookapp_books', JSON.stringify([]));
+    localStorage.setItem('bookapp_friends', JSON.stringify([]));
+    localStorage.setItem('bookapp_messages', JSON.stringify([]));
+    localStorage.setItem('bookapp_likes', JSON.stringify({}));
+}
+
+/**
+ * Initialize default books and friends for demo/guest users
  */
 function initializeDefaultData() {
     const DEFAULT_BOOKS = [

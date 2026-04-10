@@ -1605,7 +1605,19 @@ function initProfile() {
         document.getElementById('edit-name').value = u.name;
         document.getElementById('edit-handle').value = u.handle;
         document.getElementById('edit-goal').value = u.goal || 50;
-        document.getElementById('edit-avatar').value = u.avatar;
+        document.getElementById('edit-avatar').value = u.avatar || '';
+
+        // Populate the avatar preview
+        const preview = document.getElementById('edit-avatar-preview');
+        if (preview && u.avatar) {
+            preview.innerHTML = `<img src="${u.avatar}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">
+                <div id="avatar-camera-overlay" style="position:absolute;inset:0;background:rgba(0,0,0,0.4);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;">
+                    <span class="material-symbols-outlined" style="color:white;font-size:22px;">photo_camera</span>
+                </div>`;
+        }
+        // Re-attach hover if needed
+        attachAvatarPreviewHover();
+
         document.getElementById('edit-profile-modal').style.display = 'flex';
     };
 
@@ -1621,22 +1633,45 @@ function initProfile() {
         avatarUploadInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
-                const btn = avatarUploadInput.nextElementSibling;
-                btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;margin-right:4px;"></span> Procesando...';
-                
+                const btn = document.getElementById('upload-photo-btn');
+                if (btn) btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">hourglass_empty</span> Procesando...';
+
                 // processAndCompressImage is in auth.js
                 processAndCompressImage(file, (base64, err) => {
                     if (err) {
-                        alert(err);
-                        btn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 18px;">upload</span>Subir nueva foto';
+                        if (btn) btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">upload</span> Cambiar foto';
                         return;
                     }
                     document.getElementById('edit-avatar').value = base64;
-                    btn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 18px; color: #34d399">check_circle</span>¡Imagen Lista!';
+
+                    // Update the live preview
+                    const preview = document.getElementById('edit-avatar-preview');
+                    if (preview) {
+                        preview.innerHTML = `<img src="${base64}" style="width:100%;height:100%;object-fit:cover;">
+                            <div id="avatar-camera-overlay" style="position:absolute;inset:0;background:rgba(0,0,0,0.4);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;">
+                                <span class="material-symbols-outlined" style="color:white;font-size:22px;">photo_camera</span>
+                            </div>`;
+                        attachAvatarPreviewHover();
+                    }
+
+                    if (btn) btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;color:#34d399;">check_circle</span> ¡Foto Lista!';
                 });
             }
         });
     }
+
+    // Hover effect for avatar preview circle
+    function attachAvatarPreviewHover() {
+        const preview = document.getElementById('edit-avatar-preview');
+        const overlay = document.getElementById('avatar-camera-overlay');
+        if (preview && overlay) {
+            preview.onmouseenter = () => overlay.style.opacity = '1';
+            preview.onmouseleave = () => overlay.style.opacity = '0';
+            // On mobile, always show slightly
+            overlay.style.opacity = '0.5';
+        }
+    }
+    attachAvatarPreviewHover();
 
     if (profileForm) {
         profileForm.addEventListener('submit', (e) => {

@@ -636,8 +636,9 @@
                     <span class="material-symbols-outlined" style="font-size: 20px;">person_add</span>
                     Crear Cuenta
                 </button>
-                <button class="btn-ghost" onclick="loginAsGuest()">
-                    Continuar como invitado
+                <button class="btn-ghost" onclick="showLoginScreen()">
+                    <span class="material-symbols-outlined" style="font-size: 20px;">login</span>
+                    Iniciar Sesión
                 </button>
             </div>
 
@@ -719,6 +720,47 @@
                 <span class="material-symbols-outlined" style="font-size: 20px;">home</span>
                 Ir a NookVibe
             </button>
+        </div>
+
+        <!-- SCREEN 4: Login -->
+        <div id="screen-login" class="screen screen-form">
+            <div class="form-header">
+                <button class="back-btn" onclick="showScreen('screen-welcome')">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                </button>
+                <h2 class="form-title">Iniciar Sesión</h2>
+            </div>
+
+            <!-- Saved accounts on this device -->
+            <div id="saved-accounts-section" style="display:none; margin-bottom: 1.5rem;">
+                <p style="font-size:0.8rem; color:rgba(255,255,255,0.5); margin-bottom:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">Cuentas guardadas en este dispositivo</p>
+                <div id="saved-accounts-list" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
+                <div style="display:flex; align-items:center; gap:1rem; margin:1.25rem 0;">
+                    <div style="flex:1; height:1px; background:rgba(255,255,255,0.15);"></div>
+                    <span style="font-size:0.75rem; color:rgba(255,255,255,0.4);">o entra con handle</span>
+                    <div style="flex:1; height:1px; background:rgba(255,255,255,0.15);"></div>
+                </div>
+            </div>
+
+            <!-- Handle login form -->
+            <div class="form-fields">
+                <div class="field-group">
+                    <label class="field-label" for="login-handle">Tu handle</label>
+                    <input class="field-input" id="login-handle" type="text" placeholder="@tu_handle" autocomplete="username" autocapitalize="none">
+                    <span class="field-hint">El handle que usaste al crear tu cuenta</span>
+                    <span class="field-error" id="login-error" style="display:none;">No se encontró ninguna cuenta con ese handle en este dispositivo.</span>
+                </div>
+
+                <button class="btn-white" style="margin-top:0.5rem;" onclick="handleLogin()">
+                    <span class="material-symbols-outlined" style="font-size:20px;">login</span>
+                    Entrar
+                </button>
+
+                <p style="text-align:center; font-size:0.75rem; color:rgba(255,255,255,0.4); line-height:1.5;">
+                    La sincronización entre dispositivos requiere activar Firebase.
+                    <br>En este dispositivo, tus datos están guardados localmente.
+                </p>
+            </div>
         </div>
     </div>
 
@@ -837,6 +879,79 @@
 
         function goToApp() {
             window.location.replace('index.html');
+        }
+
+        // ─── Login Screen Logic ───────────────────────────────────────
+        function showLoginScreen() {
+            // Populate saved accounts from localStorage
+            const accounts = JSON.parse(localStorage.getItem('bookapp_accounts') || '{}');
+            const handles = Object.keys(accounts);
+            const section = document.getElementById('saved-accounts-section');
+            const list = document.getElementById('saved-accounts-list');
+
+            if (handles.length > 0) {
+                section.style.display = 'block';
+                list.innerHTML = handles.map(handle => {
+                    const acc = accounts[handle];
+                    const avatarHtml = acc.avatar
+                        ? `<img src="${acc.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.style.display='none'">`
+                        : `<span class="material-symbols-outlined" style="font-size:20px;color:rgba(255,255,255,0.6);">person</span>`;
+                    return `
+                        <button onclick="quickLogin('${handle}')" style="
+                            display:flex; align-items:center; gap:0.75rem;
+                            background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15);
+                            border-radius:0.875rem; padding:0.875rem 1rem; cursor:pointer;
+                            transition:all 0.2s; width:100%; text-align:left;
+                        ">
+                            <div style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+                                ${avatarHtml}
+                            </div>
+                            <div style="flex:1;">
+                                <p style="color:white;font-weight:700;font-size:0.9375rem;">${acc.name}</p>
+                                <p style="color:rgba(255,255,255,0.5);font-size:0.8125rem;">${handle}</p>
+                            </div>
+                            <span class="material-symbols-outlined" style="color:rgba(255,255,255,0.4);font-size:20px;">arrow_forward_ios</span>
+                        </button>
+                    `;
+                }).join('');
+            } else {
+                section.style.display = 'none';
+            }
+
+            showScreen('screen-login');
+        }
+
+        function quickLogin(handle) {
+            const result = login({ handle });
+            if (result) {
+                window.location.replace('index.html');
+            } else {
+                // account meta exists but no user data - fall back to handle input
+                document.getElementById('login-handle').value = handle;
+                document.getElementById('login-error').style.display = 'block';
+                document.getElementById('login-error').textContent = 'Error al recuperar la cuenta. Intenta con tu handle manualmente.';
+            }
+        }
+
+        function handleLogin() {
+            const handleInput = document.getElementById('login-handle');
+            const errorEl = document.getElementById('login-error');
+            let handle = handleInput.value.trim();
+            if (!handle) { handleInput.focus(); return; }
+            if (!handle.startsWith('@')) handle = '@' + handle;
+
+            errorEl.style.display = 'none';
+
+            // Try to restore account by handle
+            const result = login({ handle });
+            if (result) {
+                window.location.replace('index.html');
+            } else {
+                errorEl.style.display = 'block';
+                errorEl.textContent = 'No se encontró ninguna cuenta con ese handle en este dispositivo.';
+                handleInput.style.borderColor = '#f87171';
+                setTimeout(() => { handleInput.style.borderColor = ''; }, 2000);
+            }
         }
 
         // Mini confetti for success screen
