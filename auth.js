@@ -127,7 +127,7 @@ function login(credentials) {
 /**
  * Log the user out
  */
-function logout() {
+async function logout() {
     // Save user data under their handle key before clearing active session
     // so they can log back in on the same device
     try {
@@ -142,6 +142,11 @@ function logout() {
             if (friends) localStorage.setItem('bookapp_friends_' + user.handle, friends);
         }
     } catch(e) { /* silent */ }
+    
+    if (typeof NookFireAuth !== 'undefined' && NookFireAuth && NookFireAuth.signOut && window._firebaseEnabled) {
+        try { await NookFireAuth.signOut(); } catch(e) {}
+    }
+    
     localStorage.removeItem(SESSION_KEY);
     window.location.replace('login.html');
 }
@@ -149,7 +154,10 @@ function logout() {
 /**
  * Log out and clear all data
  */
-function logoutAndClear() {
+async function logoutAndClear() {
+    if (typeof NookFireAuth !== 'undefined' && NookFireAuth && NookFireAuth.signOut && window._firebaseEnabled) {
+        try { await NookFireAuth.signOut(); } catch(e) {}
+    }
     localStorage.removeItem(SESSION_KEY);
     localStorage.removeItem('bookapp_user');
     localStorage.removeItem('bookapp_books');

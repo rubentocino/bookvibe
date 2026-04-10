@@ -139,6 +139,20 @@ class AppState {
         }
     }
 
+    _pushBook(book) {
+        if (window._firebaseEnabled && window.NookFireAuth && window.NookFireAuth.isAuthenticated()) {
+            const u = window.NookFireAuth.getCurrentUser();
+            if (u) window.NookFireDB.saveBook(u.uid, book).catch(console.error);
+        }
+    }
+
+    _deleteBookCloud(bookId) {
+        if (window._firebaseEnabled && window.NookFireAuth && window.NookFireAuth.isAuthenticated()) {
+            const u = window.NookFireAuth.getCurrentUser();
+            if (u) window.NookFireDB.deleteBook(u.uid, bookId).catch(console.error);
+        }
+    }
+
     getUser() {
         return JSON.parse(localStorage.getItem('bookapp_user'));
     }
@@ -154,6 +168,13 @@ class AppState {
     updateUser(updates) {
         const user = { ...this.getUser(), ...updates };
         localStorage.setItem('bookapp_user', JSON.stringify(user));
+        
+        // Push user updates to Firestore
+        if (window._firebaseEnabled && window.NookFireAuth && window.NookFireAuth.isAuthenticated()) {
+            const u = window.NookFireAuth.getCurrentUser();
+            if (u) window.NookFireDB.saveUserProfile(u.uid, updates).catch(console.error);
+        }
+        
         return user;
     }
 
@@ -213,6 +234,7 @@ class AppState {
 
         books.unshift(newBook); // add to top
         this.saveBooks(books);
+        this._pushBook(newBook);
     }
 
     updateBookProgress(id, newPagesRead) {
@@ -235,6 +257,7 @@ class AppState {
             book.updatedAt = Date.now();
             
             this.saveBooks(books);
+            this._pushBook(book);
             return book;
         }
         return null;
@@ -262,6 +285,7 @@ class AppState {
             }
             book.updatedAt = Date.now();
             this.saveBooks(books);
+            this._pushBook(book);
             return book;
         }
         return null;
@@ -278,6 +302,7 @@ class AppState {
             books[index].rating = newRating;
             books[index].updatedAt = Date.now();
             this.saveBooks(books);
+            this._pushBook(books[index]);
             return books[index];
         }
         return null;
@@ -286,6 +311,7 @@ class AppState {
     deleteBook(id) {
         const books = this.getBooks().filter(b => b.id !== id);
         this.saveBooks(books);
+        this._deleteBookCloud(id);
     }
 
     getStats() {
@@ -1637,17 +1663,29 @@ function initProfile() {
                 if (btn) btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">hourglass_empty</span> Procesando...';
 
                 // processAndCompressImage is in auth.js
-                processAndCompressImage(file, (base64, err) => {
+                processAndCompressImage(file, async (base64, err) => {
                     if (err) {
                         if (btn) btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">upload</span> Cambiar foto';
                         return;
                     }
-                    document.getElementById('edit-avatar').value = base64;
+
+                    let finalAvatarUrl = base64; // Fallback to base64 for local
+                    if (window._firebaseEnabled && window.NookFireAuth && window.NookFireAuth.isAuthenticated()) {
+                        try {
+                            const u = window.NookFireAuth.getCurrentUser();
+                            if (btn) btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;margin-right:4px;"></span> Subiendo a la nube...';
+                            finalAvatarUrl = await window.NookFireStorage.uploadAvatar(u.uid, base64);
+                        } catch(uploadErr) {
+                            console.error("Avatar upload failed:", uploadErr);
+                        }
+                    }
+
+                    document.getElementById('edit-avatar').value = finalAvatarUrl;
 
                     // Update the live preview
                     const preview = document.getElementById('edit-avatar-preview');
                     if (preview) {
-                        preview.innerHTML = `<img src="${base64}" style="width:100%;height:100%;object-fit:cover;">
+                        preview.innerHTML = `<img src="${finalAvatarUrl}" style="width:100%;height:100%;object-fit:cover;">
                             <div id="avatar-camera-overlay" style="position:absolute;inset:0;background:rgba(0,0,0,0.4);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;">
                                 <span class="material-symbols-outlined" style="color:white;font-size:22px;">photo_camera</span>
                             </div>`;

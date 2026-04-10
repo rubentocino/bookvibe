@@ -12,13 +12,13 @@
 // CONFIGURATION — Replace with your Firebase project credentials
 // ============================================================
 const firebaseConfig = {
-    apiKey: "",
-    authDomain: "",
-    projectId: "",
-    storageBucket: "",
-    messagingSenderId: "",
-    appId: "",
-    measurementId: ""  // optional, for Analytics
+    apiKey: "AIzaSyAcpoqbDOZyCCcIZuUSTwoDJiE6xou2hws",
+    authDomain: "nookvibe-797d9.firebaseapp.com",
+    projectId: "nookvibe-797d9",
+    storageBucket: "nookvibe-797d9.firebasestorage.app",
+    messagingSenderId: "258370812918",
+    appId: "1:258370812918:web:76faa93dae6bb7365fa5d7",
+    measurementId: "G-94SGN8EQVK"
 };
 
 // ============================================================
@@ -139,6 +139,7 @@ const NookFireAuth = {
         if (doc.exists) {
             const profile = doc.data();
             localStorage.setItem('bookapp_user', JSON.stringify({ ...profile, uid }));
+            try { await pullCloudData(uid); } catch(e) {}
             return { uid, ...profile };
         }
         return null;
@@ -551,6 +552,28 @@ async function migrateLocalDataToFirestore(uid) {
         console.log('[NookVibe] Streaks migrated successfully.');
     }
 }
+
+/**
+ * Pull data from Firestore into localStorage to sync state
+ */
+async function pullCloudData(uid) {
+    if (!_isFirebaseReady) return;
+    try {
+        const books = await NookFireDB.getBooks(uid);
+        if (books && books.length > 0) localStorage.setItem('bookapp_books', JSON.stringify(books));
+        
+        const friends = await NookFireDB.getFriends(uid);
+        if (friends && friends.length > 0) localStorage.setItem('bookapp_friends', JSON.stringify(friends));
+        
+        const streaks = await NookFireDB.getStreaks(uid);
+        if (streaks && Object.keys(streaks).length > 0) localStorage.setItem('bookapp_streaks', JSON.stringify(streaks));
+        
+        console.log('[NookVibe] Cloud data pulled successfully.');
+    } catch(err) {
+        console.error("[NookVibe] Error pulling cloud data", err);
+    }
+}
+window.pullCloudData = pullCloudData;
 
 // ============================================================
 // LOCAL FALLBACK (mirrors existing auth.js behavior)

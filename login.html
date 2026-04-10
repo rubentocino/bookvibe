@@ -667,9 +667,18 @@
 
             <form id="create-profile-form" class="form-fields" onsubmit="handleCreateProfile(event)">
                 <div class="field-group">
+                    <label class="field-label" for="input-email">Correo Electrónico</label>
+                    <input class="field-input" id="input-email" type="email" placeholder="tu@correo.com" required autocomplete="email">
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label" for="input-password">Contraseña</label>
+                    <input class="field-input" id="input-password" type="password" placeholder="Mínimo 6 caracteres" required minlength="6" autocomplete="new-password">
+                </div>
+
+                <div class="field-group">
                     <label class="field-label" for="input-name">Nombre</label>
                     <input class="field-input" id="input-name" type="text" placeholder="Tu nombre" required maxlength="30" autocomplete="name">
-                    <span class="field-error">Por favor, introduce tu nombre</span>
                 </div>
 
                 <div class="field-group">
@@ -733,37 +742,40 @@
 
             <!-- Saved accounts on this device -->
             <div id="saved-accounts-section" style="display:none; margin-bottom: 1.5rem;">
-                <p style="font-size:0.8rem; color:rgba(255,255,255,0.5); margin-bottom:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">Cuentas guardadas en este dispositivo</p>
+                <p style="font-size:0.8rem; color:rgba(255,255,255,0.5); margin-bottom:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">Cuentas guardadas localmente</p>
                 <div id="saved-accounts-list" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
                 <div style="display:flex; align-items:center; gap:1rem; margin:1.25rem 0;">
                     <div style="flex:1; height:1px; background:rgba(255,255,255,0.15);"></div>
-                    <span style="font-size:0.75rem; color:rgba(255,255,255,0.4);">o entra con handle</span>
+                    <span style="font-size:0.75rem; color:rgba(255,255,255,0.4);">o inicia sesión con Firebase</span>
                     <div style="flex:1; height:1px; background:rgba(255,255,255,0.15);"></div>
                 </div>
             </div>
 
-            <!-- Handle login form -->
-            <div class="form-fields">
+            <!-- Email & Password login form -->
+            <form id="login-form-submit" class="form-fields" onsubmit="event.preventDefault(); handleLogin();">
                 <div class="field-group">
-                    <label class="field-label" for="login-handle">Tu handle</label>
-                    <input class="field-input" id="login-handle" type="text" placeholder="@tu_handle" autocomplete="username" autocapitalize="none">
-                    <span class="field-hint">El handle que usaste al crear tu cuenta</span>
-                    <span class="field-error" id="login-error" style="display:none;">No se encontró ninguna cuenta con ese handle en este dispositivo.</span>
+                    <label class="field-label" for="login-email">Correo Electrónico</label>
+                    <input class="field-input" id="login-email" type="email" placeholder="tu@correo.com" required autocomplete="email" autocapitalize="none">
+                </div>
+                <div class="field-group">
+                    <label class="field-label" for="login-password">Contraseña</label>
+                    <input class="field-input" id="login-password" type="password" placeholder="Tu contraseña" required autocomplete="current-password">
+                    <span class="field-error" id="login-error" style="display:none;">Correo o contraseña incorrectos.</span>
                 </div>
 
-                <button class="btn-white" style="margin-top:0.5rem;" onclick="handleLogin()">
+                <button type="submit" class="btn-white" style="margin-top:0.5rem;" id="login-submit-btn">
                     <span class="material-symbols-outlined" style="font-size:20px;">login</span>
                     Entrar
                 </button>
-
-                <p style="text-align:center; font-size:0.75rem; color:rgba(255,255,255,0.4); line-height:1.5;">
-                    La sincronización entre dispositivos requiere activar Firebase.
-                    <br>En este dispositivo, tus datos están guardados localmente.
-                </p>
-            </div>
+            </form>
         </div>
     </div>
 
+        <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
     <script src="firebase.js"></script>
     <script src="auth.js"></script>
     <script>
@@ -826,23 +838,32 @@
         }
 
         // Create profile
-        function handleCreateProfile(e) {
+        async function handleCreateProfile(e) {
             e.preventDefault();
+            
+            const btn = e.target.querySelector('button[type="submit"]') || e.target.querySelector('.btn-primary');
+            if (btn) {
+                btn.innerHTML = '<span class="spinner" style="width:16px;height:16px;border-width:2px;margin-right:6px;"></span> Creando...';
+                btn.disabled = true;
+            }
 
             const name = document.getElementById('input-name').value.trim();
+            const email = document.getElementById('input-email').value.trim();
+            const password = document.getElementById('input-password').value;
             const handle = document.getElementById('input-handle').value.trim() || '@' + name.toLowerCase().replace(/\s+/g, '_');
             const goal = parseInt(document.getElementById('input-goal').value) || 25;
             const genre = document.getElementById('input-genre').value;
 
             if (!name) {
                 document.getElementById('input-name').parentElement.classList.add('has-error');
+                if (btn) { btn.disabled = false; btn.innerHTML = 'Adelante <span class="material-symbols-outlined">arrow_forward</span>'; }
                 return;
             }
 
             // Use selected avatar or generate one from name
             const avatar = selectedAvatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(name)}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
 
-            const user = {
+            const userData = {
                 name,
                 handle: handle.startsWith('@') ? handle : '@' + handle,
                 goal,
@@ -851,14 +872,26 @@
                 createdAt: new Date().toISOString()
             };
 
-            createAccount(user);
-
-            // Show success
-            document.getElementById('success-name').textContent = `¡Bienvenido, ${name}!`;
-            showScreen('screen-success');
-
-            // Confetti effect
-            launchLoginConfetti();
+            try {
+                if (typeof NookFireAuth !== 'undefined' && NookFireAuth && NookFireAuth.signUp && window._firebaseEnabled) {
+                    await NookFireAuth.signUp(email, password, userData);
+                    // NookFireAuth.signUp saves to LocalStorage too, so we just setup the session
+                    login({ handle: userData.handle });
+                } else {
+                    createAccount(userData);
+                }
+                
+                document.getElementById('success-name').textContent = `¡Bienvenido, ${name.split(' ')[0]}!`;
+                showScreen('screen-success');
+                launchLoginConfetti();
+            } catch (err) {
+                console.error("Auth error:", err);
+                alert("Error al crear la cuenta: " + err.message);
+                if (btn) {
+                    btn.innerHTML = 'Adelante <span class="material-symbols-outlined">arrow_forward</span>';
+                    btn.disabled = false;
+                }
+            }
         }
 
         // Guest login
@@ -933,24 +966,45 @@
             }
         }
 
-        function handleLogin() {
-            const handleInput = document.getElementById('login-handle');
+        async function handleLogin() {
+            const emailInput = document.getElementById('login-email');
+            const passInput = document.getElementById('login-password');
             const errorEl = document.getElementById('login-error');
-            let handle = handleInput.value.trim();
-            if (!handle) { handleInput.focus(); return; }
-            if (!handle.startsWith('@')) handle = '@' + handle;
-
+            const btn = document.getElementById('login-submit-btn');
+            
             errorEl.style.display = 'none';
+            btn.innerHTML = '<span class="spinner" style="width:16px;height:16px;border-width:2px;margin-right:6px;"></span> Entrando...';
+            btn.disabled = true;
 
-            // Try to restore account by handle
-            const result = login({ handle });
-            if (result) {
-                window.location.replace('index.html');
-            } else {
+            try {
+                if (typeof NookFireAuth !== 'undefined' && NookFireAuth && NookFireAuth.signIn) {
+                    const user = await NookFireAuth.signIn(emailInput.value.trim(), passInput.value);
+                    if (user) {
+                        try {
+                            // Recover local session to match
+                            login({ handle: user.handle });
+                        } catch(e) {}
+                        window.location.replace('index.html');
+                    } else {
+                        throw new Error("Invalid credentials");
+                    }
+                } else {
+                    // Fallback to local handles if Firebase is down
+                    const user = login({ handle: emailInput.value });
+                    if (user) {
+                        window.location.replace('index.html');
+                    } else {
+                        throw new Error("No local account found");
+                    }
+                }
+            } catch (err) {
+                console.error("Login failed:", err);
                 errorEl.style.display = 'block';
-                errorEl.textContent = 'No se encontró ninguna cuenta con ese handle en este dispositivo.';
-                handleInput.style.borderColor = '#f87171';
-                setTimeout(() => { handleInput.style.borderColor = ''; }, 2000);
+                errorEl.textContent = 'Correo o contraseña incorrectos.';
+                emailInput.style.borderColor = '#f87171';
+                setTimeout(() => { emailInput.style.borderColor = ''; }, 2000);
+                btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;">login</span> Entrar';
+                btn.disabled = false;
             }
         }
 
